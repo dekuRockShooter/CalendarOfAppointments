@@ -37,22 +37,29 @@ import javafx.util.Callback;
 
 import java.util.Optional;
 import java.util.Calendar;
+import java.sql.SQLException;
+
+import com.deku.control.CalendarFactory;
 
 
 public class CalendarLauncher extends Application {
+
+    private CalendarFactory calendarFactory;
 
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws SQLException {
         final Label label = new Label("Address Book");
         label.setFont(new Font("Arial", 20));
+        calendarFactory = new CalendarFactory();
+        TableView table = calendarFactory.getThisWeek();
         final VBox vbox = new VBox();
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
-        vbox.getChildren().addAll(label);
+        vbox.getChildren().addAll(label, table);
         Scene scene = new Scene(vbox);
         stage.setTitle("Calendar");
         stage.setWidth(300);
