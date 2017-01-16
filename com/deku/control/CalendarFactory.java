@@ -143,6 +143,42 @@ public class CalendarFactory {
      * what data in TimeSlot is shown for a specific column.
      */
     private void initColumns() throws SQLException {
+        // This factory makes each cell listen to mouse events.
+        // Source: http://stackoverflow.com/questions/12499269/javafx-tableview-detect-a-doubleclick-on-a-cell
+        Callback<TableColumn<TimeSlot, String>,
+                 TableCell<TimeSlot, String>> cellFactory =
+            new Callback<TableColumn<TimeSlot, String>,
+                         TableCell<TimeSlot, String>>() {
+                public TableCell<TimeSlot, String> call(TableColumn<TimeSlot,
+                                                        String> p) {
+                    TableCell<TimeSlot, String> cell = new TableCell<TimeSlot,
+                                                                     String>() {
+                        @Override
+                        public void updateItem(String item, boolean empty) {
+                            super.updateItem(item, empty);
+                            setText(empty ? null : getString());
+                            setGraphic(null);
+                        }
+
+                        private String getString() {
+                            return getItem() == null ? "" : getItem().toString();
+                        }
+                    };
+                    // Here is where mouse clicks are handled.
+                    cell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent event) {
+                            // Ctrl + click
+                            if (event.getClickCount() == 1
+                                && event.isControlDown()) {
+                                TableCell c = (TableCell) event.getSource();
+                                c.setStyle("-fx-background-color:red");
+                            }
+                        }
+                    });
+                    return cell;
+                }
+            };
         String[] headers = initHeaders();
         int j = 0;
         final int NUM_DAYS = 8;
@@ -151,6 +187,7 @@ public class CalendarFactory {
             TableColumn<TimeSlot, String> col = new TableColumn<>(headers[j]);
             col.setMinWidth(100);
             final int day_idx = j;
+            col.setCellFactory(cellFactory);
             // Define what each column returns.
             col.setCellValueFactory(
                     new Callback<CellDataFeatures<TimeSlot, String>,
