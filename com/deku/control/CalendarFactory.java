@@ -58,6 +58,7 @@ public class CalendarFactory {
     private CalendarController calendarCon;
     private PatientsController patientsCon;
     private Calendar curWeek;
+    private ContextMenu contextMenu;
     // Store table rows.
     private ObservableList<TimeSlot> data;
     // Column headers.
@@ -107,6 +108,8 @@ public class CalendarFactory {
         initData();
         initColumns();
         table.setItems(data);
+        initContextMenu();
+        table.setContextMenu(contextMenu);
         return table;
     }
 
@@ -236,6 +239,33 @@ public class CalendarFactory {
             }
         }
     }
+
+    private void initContextMenu() {
+        contextMenu = new ContextMenu();
+        MenuItem copy_item = new MenuItem("Copy");
+        copy_item.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                System.out.println("About");
+                // TODO: set name and datetime of cell to copy.
+            }
+        });
+        MenuItem paste_item = new MenuItem("Paste");
+        paste_item.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                // TODO: copy name and datetime to datetimes in pasteList.
+                System.out.println("Preferences");
+            }
+        });
+        MenuItem delete_item = new MenuItem("Delete");
+        delete_item.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                // TODO: delete datetime from database.
+                System.out.println("Preferences");
+            }
+        });
+        contextMenu.getItems().addAll(copy_item, paste_item, delete_item);
+    }
+
 
 
     // TODO: Try to change this to use PropertyValueFactory.
