@@ -176,7 +176,11 @@ public class CalendarFactory {
                             }
                             // Double click.
                             else if (event.getClickCount() > 1) {
-                                System.err.println("nunu");
+                                TableCell c = (TableCell) event.getSource();
+                                TableColumn<TimeSlot, String> col = 
+                                    c.getTableColumn();
+                                String name = c.getText();
+                                System.err.println(name);
                             }
                         }
                     });
