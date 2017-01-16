@@ -47,7 +47,7 @@ import java.sql.SQLException;
 
 import com.deku.controller.*;
 import com.deku.dialog.NewAppointmentDialog;
-import com.deku.model.AppointmentInfo;
+import com.deku.dialog.NewAppointmentDialog.AppointmentInfo;
 
 
 public class CalendarFactory {
@@ -177,7 +177,7 @@ public class CalendarFactory {
                             // Double click.
                             else if (event.getClickCount() > 1) {
                                 TableCell cell = (TableCell) event.getSource();
-                                TableColumn<TimeSlot, String> col = 
+                                TableColumn<TimeSlot, String> col =
                                     cell.getTableColumn();
                                 String name = cell.getText();
                                 String date = col.getText();
@@ -185,7 +185,18 @@ public class CalendarFactory {
                                 TableRow<TimeSlot> row = cell.getTableRow();
                                 TimeSlot timeSlot = row.getItem();
                                 String time = timeSlot.getDay(0).getValue();
-                                System.err.println(time);
+                                if (name == "") {
+                                    Dialog<AppointmentInfo> dialog =
+                                        NewAppointmentDialog.getDialog();
+                                    Optional<AppointmentInfo> result =
+                                        dialog.showAndWait();
+                                    if (result.isPresent()) {
+                                        System.out.println(result.get());
+                                    }
+                                }
+                                else {
+                                    System.err.println("edit");
+                                }
                             }
                         }
                     });
