@@ -50,12 +50,17 @@ import com.deku.control.CalendarFactory;
 public class CalendarScene {
 
     private CalendarFactory calendarFactory;
+    private Calendar curWeek;
+    private TableView table;
+    private VBox vbox;
+    private HBox navBar;
 
     public Scene getInstance() throws SQLException {
+        curWeek = Calendar.getInstance();
         calendarFactory = new CalendarFactory();
-        TableView table = calendarFactory.getThisWeek();
-        final VBox vbox = new VBox();
-        final HBox navBar = new HBox();
+        table = calendarFactory.getThisWeek();
+        vbox = new VBox();
+        navBar = new HBox();
         final Button nextWeekButton = new Button("Next");
         final Button prevWeekButton = new Button("Prev");
         initButton(nextWeekButton, 'n');
@@ -77,10 +82,39 @@ public class CalendarScene {
         return scene;
     }
 
+    /**
+     * Initialize the buttons for navigation to the next/prev week.
+     *
+     * @param button the button to initalize.  This should be a button
+     *               for moving to the next or previous week.
+     * @param direction a char for specifying which week to go to.  If
+     *                  'n', then the next week's calendar is loaded.
+     *                  If 'p' then the previous week's calendar is loaded.
+     *                  If anything else, then the current week's calendar
+     *                  is loaded.
+     */
     private void initButton(Button button, char direction) {
+        int dir = 0;
+        if (direction == 'p') {
+            dir = -7;
+        }
+        else if (direction == 'n') {
+            dir = 7;
+        }
+        final int step = dir;
         button.setOnAction(e -> {
-            System.err.println("click");
+            curWeek.add(Calendar.DAY_OF_MONTH, step);
+            // Throw RuntimeException because the overriden method does
+            // not throw an SQLException and the code wont compile.
+            table = null;
+            try {
+                vbox.getChildren().clear();
+                table = calendarFactory.getWeek(curWeek);
+                vbox.getChildren().addAll(navBar, table);
+            }
+            catch (SQLException err) {
+                throw new RuntimeException(err.toString());
+            }
         });
     }
-
 }
