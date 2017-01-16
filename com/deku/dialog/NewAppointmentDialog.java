@@ -80,6 +80,8 @@ public class NewAppointmentDialog {
         searchButton = new Button("search");
         fuzzyCheckBox = new CheckBox("Fuzzy search");
 
+        initButtons();
+
         grid = new GridPane();
         grid.add(firstNameTxtField, 1, 1);
         grid.add(lastNameTxtField, 2, 1);
@@ -102,6 +104,26 @@ public class NewAppointmentDialog {
             }
         });
         return dialog;
+    }
+
+    private void initButtons() {
+        searchButton.setOnAction(e -> {
+            List<Map<String, String>> names;
+            try {
+                names = patientCon.searchNames(firstNameTxtField.getText(),
+                                               lastNameTxtField.getText(),
+                                               fuzzyCheckBox.isSelected());
+            }
+            catch (SQLException err) {
+                // Throw RuntimeException because this
+                // method does not throw an
+                // SQLException.
+                throw new RuntimeException(err.toString());
+            }
+            for (Map<String, String> m : names) {
+                System.err.println(m);
+            }
+        });
     }
 
 
