@@ -137,18 +137,6 @@ public class NewAppointmentDialog {
 
     private void initListView() {
         searchResultsListView.setVisible(false);
-        searchResultsListView.addEventFilter(MouseEvent.MOUSE_CLICKED,
-                                             new EventHandler<MouseEvent>() {
-             @Override
-             public void handle(MouseEvent event) {
-                 if (event.getClickCount() > 1) {
-                     Map<String, String> selection = searchResultsListView.
-                         getSelectionModel().getSelectedItem();
-                     searchResultsListView.setVisible(false);
-                     System.err.println(selection);
-                 }
-             }
-        });
     }
 
     private void initButtons() {
