@@ -38,34 +38,53 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.CheckBox;
 import javafx.util.Callback;
 
+import java.util.List;
+import java.util.Map;
+import java.sql.SQLException;
+
+import com.deku.controller.PatientsController;
 
 // Source for creating custom dialogs:
 // https://examples.javacodegeeks.com/desktop-java/javafx/dialog-javafx/javafx-dialog-example/
 
 public class NewAppointmentDialog {
 
-    private NewAppointmentDialog() {
+    private Dialog<AppointmentInfo> dialog;
+    private Label firstNameLabel;
+    private Label lastNameLabel;
+    private TextField firstNameTxtField;
+    private TextField lastNameTxtField;
+    private Button searchButton;
+    private CheckBox fuzzyCheckBox;
+    private GridPane grid;
+    private PatientsController patientCon;
+
+    public NewAppointmentDialog() {
     }
 
-    public static Dialog getDialog() {
-        Dialog<AppointmentInfo> dialog = new Dialog<>();
+    public Dialog getDialog() throws SQLException {
+        patientCon = new PatientsController();
+
+        dialog = new Dialog<>();
         dialog.setTitle("New appointment");
         dialog.setHeaderText("New Appointment");
         dialog.setResizable(true);
 
-        Label firstNameLabel = new Label("First name: ");
-        Label lastNameLabel = new Label("Last name: ");
-        TextField firstNameTxtField = new TextField();
-        TextField lastNameTxtField = new TextField();
+        firstNameTxtField = new TextField("First name");
+        lastNameTxtField = new TextField("Last name");
+        searchButton = new Button("search");
+        fuzzyCheckBox = new CheckBox("Fuzzy search");
 
-        GridPane grid = new GridPane();
-        grid.add(firstNameLabel, 1, 1);
-        grid.add(firstNameTxtField, 2, 1);
-        grid.add(lastNameLabel, 1, 2);
-        grid.add(lastNameTxtField, 2, 2);
+        grid = new GridPane();
+        grid.add(firstNameTxtField, 1, 1);
+        grid.add(lastNameTxtField, 2, 1);
+        grid.add(fuzzyCheckBox, 3, 1);
+        grid.add(searchButton, 3, 2);
         dialog.getDialogPane().setContent(grid);
 
         ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);

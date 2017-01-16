@@ -185,9 +185,19 @@ public class CalendarFactory {
                                 TableRow<TimeSlot> row = cell.getTableRow();
                                 TimeSlot timeSlot = row.getItem();
                                 String time = timeSlot.getDay(0).getValue();
+                                Dialog<AppointmentInfo> dialog;
                                 if (name == "") {
-                                    Dialog<AppointmentInfo> dialog =
-                                        NewAppointmentDialog.getDialog();
+                                    NewAppointmentDialog newAppointment =
+                                        new NewAppointmentDialog();
+                                    try {
+                                        dialog = newAppointment.getDialog();
+                                    }
+                                    catch (SQLException err) {
+                                        // Throw RuntimeException because this
+                                        // method does not throw an
+                                        // SQLException.
+                                        throw new RuntimeException(err.toString());
+                                    }
                                     Optional<AppointmentInfo> result =
                                         dialog.showAndWait();
                                     if (result.isPresent()) {
