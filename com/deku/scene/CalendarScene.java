@@ -103,14 +103,7 @@ public class CalendarScene {
             // Throw RuntimeException because the overriden method does
             // not throw an SQLException and the code wont compile.
             table = null;
-            try {
-                vbox.getChildren().clear();
-                table = calendarFactory.getWeek(curWeek);
-                vbox.getChildren().addAll(navBar, table);
-            }
-            catch (SQLException err) {
-                throw new RuntimeException(err.toString());
-            }
+            refreshTable();
         });
     }
 
@@ -131,14 +124,19 @@ public class CalendarScene {
             curWeek.set(Calendar.YEAR, date.getYear());
             // Throw RuntimeException because the overriden method does
             // not throw an SQLException and the code wont compile.
-            try {
-                vbox.getChildren().clear();
-                table = calendarFactory.getWeek(curWeek);
-                vbox.getChildren().addAll(navBar, table);
-            }
-            catch (SQLException err) {
-                throw new RuntimeException(err.toString());
-            }
+            refreshTable();
         });
+
+    }
+
+    private void refreshTable() {
+        try {
+            vbox.getChildren().clear();
+            table = calendarFactory.getWeek(curWeek);
+            vbox.getChildren().addAll(navBar, table);
+        }
+        catch (SQLException err) {
+            throw new RuntimeException(err.toString());
+        }
     }
 }
