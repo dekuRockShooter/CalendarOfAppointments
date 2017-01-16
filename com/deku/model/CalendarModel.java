@@ -182,7 +182,6 @@ public class CalendarModel {
                 map.put(key, rs.getString(key));
             }
             rsList.add(map);
-            rs.next();
         }
         return rsList;
     }
