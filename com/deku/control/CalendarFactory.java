@@ -53,7 +53,7 @@ import com.deku.model.AppointmentInfo;
 public class CalendarFactory {
 
     // Table whose rows show data in TimeSlot.
-    private final TableView<TimeSlot> table = new TableView<>();
+    private TableView<TimeSlot> table;
     private DateController dateCon;
     private CalendarController calendarCon;
     private PatientsController patientsCon;
@@ -94,6 +94,7 @@ public class CalendarFactory {
      * @throws SQLException
      */
     private TableView init() throws SQLException {
+        table = new TableView<>();
         final Label label = new Label("Cal");
         label.setFont(new Font("Arial", 20));
         dateCon = new DateController();
