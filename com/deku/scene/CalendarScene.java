@@ -1,3 +1,5 @@
+package com.deku.scene;
+
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -33,32 +35,52 @@ import javafx.stage.WindowEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.util.Callback;
 
 import java.util.Optional;
 import java.util.Calendar;
+import java.time.LocalDate;
 import java.sql.SQLException;
 
-import com.deku.scene.CalendarScene;
+import com.deku.control.CalendarFactory;
 
 
-public class CalendarLauncher extends Application {
+public class CalendarScene {
 
-    private CalendarScene calendarScene;
+    private CalendarFactory calendarFactory;
 
-    public static void main(String[] args) {
-        launch(args);
+    public Scene getInstance() throws SQLException {
+        calendarFactory = new CalendarFactory();
+        TableView table = calendarFactory.getThisWeek();
+        final VBox vbox = new VBox();
+        final HBox navBar = new HBox();
+        final Button nextWeekButton = new Button("Next");
+        final Button prevWeekButton = new Button("Prev");
+        initButton(nextWeekButton, 'n');
+        initButton(prevWeekButton, 'p');
+        final DatePicker datePicker = new DatePicker();
+        datePicker.setOnAction(new EventHandler() {
+            public void handle(Event t) {
+                LocalDate date = datePicker.getValue();
+                System.err.println("Selected date: " + date);
+            }
+        });
+
+        navBar.getChildren().addAll(prevWeekButton, datePicker,
+                                    nextWeekButton);
+        vbox.setSpacing(5);
+        vbox.setPadding(new Insets(10, 0, 0, 10));
+        vbox.getChildren().addAll(navBar, table);
+        Scene scene = new Scene(vbox);
+        return scene;
     }
 
-    @Override
-    public void start(Stage stage) throws SQLException {
-        calendarScene = new CalendarScene();
-        Scene scene = calendarScene.getInstance();
-        stage.setTitle("Calendar");
-        stage.setWidth(300);
-        stage.setHeight(500);
-        stage.setScene(scene);
-        stage.show();
+    private void initButton(Button button, char direction) {
+        button.setOnAction(e -> {
+            System.err.println("click");
+        });
     }
 
 }
