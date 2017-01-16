@@ -54,6 +54,7 @@ public class CalendarScene {
     private TableView table;
     private VBox vbox;
     private HBox navBar;
+    private DatePicker datePicker;
 
     public Scene getInstance() throws SQLException {
         curWeek = Calendar.getInstance();
@@ -65,13 +66,8 @@ public class CalendarScene {
         final Button prevWeekButton = new Button("Prev");
         initButton(nextWeekButton, 'n');
         initButton(prevWeekButton, 'p');
-        final DatePicker datePicker = new DatePicker();
-        datePicker.setOnAction(new EventHandler() {
-            public void handle(Event t) {
-                LocalDate date = datePicker.getValue();
-                System.err.println("Selected date: " + date);
-            }
-        });
+        datePicker = new DatePicker();
+        initDatePicker();
 
         navBar.getChildren().addAll(prevWeekButton, datePicker,
                                     nextWeekButton);
@@ -107,6 +103,34 @@ public class CalendarScene {
             // Throw RuntimeException because the overriden method does
             // not throw an SQLException and the code wont compile.
             table = null;
+            try {
+                vbox.getChildren().clear();
+                table = calendarFactory.getWeek(curWeek);
+                vbox.getChildren().addAll(navBar, table);
+            }
+            catch (SQLException err) {
+                throw new RuntimeException(err.toString());
+            }
+        });
+    }
+
+    /**
+     * Initialize the DatePicker.
+     */
+    private void initDatePicker() {
+        LocalDate local = LocalDate.of(curWeek.get(Calendar.YEAR),
+                                       curWeek.get(Calendar.MONTH) + 1,
+                                       curWeek.get(Calendar.DAY_OF_MONTH));
+        datePicker.setValue(local);
+        datePicker.setOnAction(ev -> {
+            LocalDate date = datePicker.getValue();
+            // -1 because Calendar counts months from 0 to 11, but LocalDate
+            // returns does from 1 to 12.
+            curWeek.set(Calendar.MONTH, date.getMonthValue() - 1);
+            curWeek.set(Calendar.DAY_OF_MONTH, date.getDayOfMonth());
+            curWeek.set(Calendar.YEAR, date.getYear());
+            // Throw RuntimeException because the overriden method does
+            // not throw an SQLException and the code wont compile.
             try {
                 vbox.getChildren().clear();
                 table = calendarFactory.getWeek(curWeek);
