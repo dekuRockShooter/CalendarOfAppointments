@@ -174,6 +174,10 @@ public class CalendarFactory {
                                 TableCell c = (TableCell) event.getSource();
                                 c.setStyle("-fx-background-color:red");
                             }
+                            // Double click.
+                            else if (event.getClickCount() > 1) {
+                                System.err.println("nunu");
+                            }
                         }
                     });
                     return cell;
