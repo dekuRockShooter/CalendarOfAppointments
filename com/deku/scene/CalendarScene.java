@@ -103,6 +103,7 @@ public class CalendarScene {
             // Throw RuntimeException because the overriden method does
             // not throw an SQLException and the code wont compile.
             table = null;
+            setDatePickerValue();
             refreshTable();
         });
     }
@@ -111,10 +112,7 @@ public class CalendarScene {
      * Initialize the DatePicker.
      */
     private void initDatePicker() {
-        LocalDate local = LocalDate.of(curWeek.get(Calendar.YEAR),
-                                       curWeek.get(Calendar.MONTH) + 1,
-                                       curWeek.get(Calendar.DAY_OF_MONTH));
-        datePicker.setValue(local);
+        setDatePickerValue();
         datePicker.setOnAction(ev -> {
             LocalDate date = datePicker.getValue();
             // -1 because Calendar counts months from 0 to 11, but LocalDate
@@ -129,6 +127,9 @@ public class CalendarScene {
 
     }
 
+    /**
+     * Load a table for the week held in curWeek.
+     */
     private void refreshTable() {
         try {
             vbox.getChildren().clear();
@@ -138,5 +139,15 @@ public class CalendarScene {
         catch (SQLException err) {
             throw new RuntimeException(err.toString());
         }
+    }
+
+    /**
+     * Set the DatePicker's value to the current week.
+     */
+    private void setDatePickerValue() {
+        LocalDate local = LocalDate.of(curWeek.get(Calendar.YEAR),
+                                       curWeek.get(Calendar.MONTH) + 1,
+                                       curWeek.get(Calendar.DAY_OF_MONTH));
+        datePicker.setValue(local);
     }
 }
