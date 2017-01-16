@@ -41,7 +41,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ListView;
 import javafx.util.Callback;
+import javafx.collections.*;
 
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,8 @@ public class NewAppointmentDialog {
     private Button searchButton;
     private CheckBox fuzzyCheckBox;
     private GridPane grid;
+    private ListView<Map<String, String>> searchResultsListView;
+
     private PatientsController patientCon;
 
     public NewAppointmentDialog() {
@@ -79,17 +83,20 @@ public class NewAppointmentDialog {
         lastNameTxtField = new TextField();
         searchButton = new Button("search");
         fuzzyCheckBox = new CheckBox("Fuzzy search");
+        searchResultsListView = new ListView<>();
 
         firstNameTxtField.setPromptText("First name");
         lastNameTxtField.setPromptText("Last name");
 
         initButtons();
+        initListView();
 
         grid = new GridPane();
         grid.add(firstNameTxtField, 1, 1);
         grid.add(lastNameTxtField, 2, 1);
         grid.add(fuzzyCheckBox, 3, 1);
         grid.add(searchButton, 3, 2);
+        grid.add(searchResultsListView, 1, 3);
         dialog.getDialogPane().setContent(grid);
 
         ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
@@ -109,6 +116,10 @@ public class NewAppointmentDialog {
         return dialog;
     }
 
+    private void initListView() {
+        searchResultsListView.setVisible(false);
+    }
+
     private void initButtons() {
         searchButton.setOnAction(e -> {
             List<Map<String, String>> names;
@@ -123,9 +134,11 @@ public class NewAppointmentDialog {
                 // SQLException.
                 throw new RuntimeException(err.toString());
             }
-            for (Map<String, String> m : names) {
-                System.err.println(m);
-            }
+            ObservableList<Map<String, String>> res =
+                FXCollections.observableArrayList(names);
+            searchResultsListView.setItems(res);
+            searchResultsListView.setVisible(true);
+            System.err.println(res.toString());
         });
     }
 
