@@ -60,7 +60,7 @@ public class DateController {
         // Get first name, last name, hour, minuute, day of week, month,
         // and year of all patients of the given week.
         String ymd = String.format("%s-%s-%s", date.get(Calendar.YEAR),
-                                               date.get(Calendar.MONTH),
+                                               date.get(Calendar.MONTH) + 1,
                                                date.get(Calendar.DAY_OF_MONTH));
         List<Map<String, String>> rsList = model.getAppointments(ymd);
         return rsList;
@@ -81,19 +81,23 @@ public class DateController {
      *         The value of cur_year is the year that the week starts
      *         on (yyyy).
      */
-        String[] keys = {"last_day_of_month", "first_day_of_week", 
-                         "cur_month", "cur_year"};
-    public Map<String, String> getWeek(Calendar date)
+    public Calendar getWeek(Calendar date)
             throws SQLException, SQLTimeoutException {
         // Get first name, last name, hour, minuute, day of week, month,
         // and year of all patients of the given week.
         // Use this instead of Java's Calendar in order to be consistent
         // with the data in MySQL.
-        String ymd = String.format("%s-%s-%s", date.get(Calendar.YEAR),
-                                               date.get(Calendar.MONTH),
+        String ymd = String.format("%d-%d-%d", date.get(Calendar.YEAR),
+                                               date.get(Calendar.MONTH) + 1,
                                                date.get(Calendar.DAY_OF_MONTH));
-        List<Map<String, String>> rsList = model.getWeek(ymd);
-        return rsList.get(0);
+        Map<String, String> week = model.getWeek(ymd).get(0);
+        System.out.println(week);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, Integer.parseInt(week.get("cur_year")));
+        cal.set(Calendar.MONTH, Integer.parseInt(week.get("cur_month")));
+        cal.set(Calendar.DAY_OF_MONTH,
+                Integer.parseInt(week.get("first_day_of_week")));
+        return cal;
     }
 
 }
