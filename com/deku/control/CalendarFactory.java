@@ -176,11 +176,16 @@ public class CalendarFactory {
                             }
                             // Double click.
                             else if (event.getClickCount() > 1) {
-                                TableCell c = (TableCell) event.getSource();
+                                TableCell cell = (TableCell) event.getSource();
                                 TableColumn<TimeSlot, String> col = 
-                                    c.getTableColumn();
-                                String name = c.getText();
-                                System.err.println(name);
+                                    cell.getTableColumn();
+                                String name = cell.getText();
+                                String date = col.getText();
+                                // Get time.
+                                TableRow<TimeSlot> row = cell.getTableRow();
+                                TimeSlot timeSlot = row.getItem();
+                                String time = timeSlot.getDay(0).getValue();
+                                System.err.println(time);
                             }
                         }
                     });
