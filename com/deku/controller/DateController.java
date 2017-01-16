@@ -94,7 +94,7 @@ public class DateController {
         System.out.println(week);
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, Integer.parseInt(week.get("cur_year")));
-        cal.set(Calendar.MONTH, Integer.parseInt(week.get("cur_month")));
+        cal.set(Calendar.MONTH, Integer.parseInt(week.get("cur_month")) - 1);
         cal.set(Calendar.DAY_OF_MONTH,
                 Integer.parseInt(week.get("first_day_of_week")));
         return cal;
