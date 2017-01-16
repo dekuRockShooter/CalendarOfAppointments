@@ -41,6 +41,8 @@ import java.util.Optional;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.Collections;
 import java.sql.SQLException;
 
 import com.deku.controller.*;
@@ -58,6 +60,9 @@ public class CalendarFactory {
     private Calendar curWeek;
     // Store table rows.
     private ObservableList<TimeSlot> data;
+    // Column headers.
+    private static final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu",
+                                          "Fri", "Sat"};
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -66,18 +71,17 @@ public class CalendarFactory {
      * @throws SQLException
      */
     public TableView getThisWeek() throws SQLException {
-        Calendar cal = Calendar.getInstance();
-        return init(cal);
+        curWeek = Calendar.getInstance();
+        return init();
     }
 
     /**
      * Create the TableView.
      *
-     * @param cal the date of the week the TableView shows data for
      * @return a TableView set to hold data for the given week
      * @throws SQLException
      */
-    private TableView init(Calendar cal) throws SQLException {
+    private TableView init() throws SQLException {
         final Label label = new Label("Cal");
         label.setFont(new Font("Arial", 20));
         dateCon = new DateController();
@@ -87,24 +91,47 @@ public class CalendarFactory {
         // Cell selection instead of default row selection.
         table.getSelectionModel().setCellSelectionEnabled(true);
         table.setEditable(true);
-        initData(cal);
-        initColumns(cal);
+        initData();
+        initColumns();
         table.setItems(data);
         return table;
     }
 
     /**
-     * Create columns.
+     * Create the dates to show on the headers.
      *
-     * @param cal the date of the week to show data for
+     * @return an array of strings to show in the header row.  The
+     *         first element is time, while the others are the date
+     *         of a particular day.
      */
-    private void initColumns(Calendar cal) {
-        String[] days = {"Time", "Sun", "Mon"};
+    private String[]initHeaders() throws SQLException {
+        String[] headers = new String[8];
+        headers[0] = "Time";
+        Calendar week = dateCon.getWeek(curWeek);
+        int curHeader = 1;
+        for (String day : days) {
+            headers[curHeader] = String.format("%s %d %d, %d",
+                                               day,
+                                               week.get(Calendar.MONTH) + 1,
+                                               week.get(Calendar.DAY_OF_MONTH),
+                                               week.get(Calendar.YEAR));
+            week.add(Calendar.DAY_OF_MONTH, 1);
+            ++curHeader;
+        }
+        return headers;
+    }
+
+    /**
+     * Create columns.  This attaches columns to the table and defines
+     * what data in TimeSlot is shown for a specific column.
+     */
+    private void initColumns() throws SQLException {
+        String[] headers = initHeaders();
         int j = 0;
-        final int NUM_DAYS = 2;
+        final int NUM_DAYS = 8;
         // Create tables.
         while (j < NUM_DAYS) {
-            TableColumn<TimeSlot, String> col = new TableColumn<>(days[j]);
+            TableColumn<TimeSlot, String> col = new TableColumn<>(headers[j]);
             col.setMinWidth(100);
             final int day_idx = j;
             // Define what each column returns.
@@ -124,17 +151,16 @@ public class CalendarFactory {
 
     /**
      * Initialize data to show in the TableView.
-     *
-     * @param cal the date of the week to show data for
      */
-    private void initData(Calendar cal) throws SQLException {
+    private void initData() throws SQLException {
         // The data to show in the table is done by rows.  Give the table rows
         // and it displays them.  The rows are held in 'data'.  In this table,
         // the rows denote a specific time.  The columns are days.  So each
         // row in 'data' holds a TimeSlot object that has data for each day
         // of that time.
-        List<Map<String, String>> appointments = dateCon.getAppointments(cal);
-        Map<String, String> curAppointment = null;
+        List<Map<String, String>> appointments =
+            dateCon.getAppointments(curWeek);
+        Map<String, String> curAppointment = Collections.<String, String>emptyMap();
         if (!appointments.isEmpty()) {
             curAppointment = appointments.get(0);
         }
@@ -162,17 +188,25 @@ public class CalendarFactory {
                 // Time and days will never be negative, so if the list is
                 // empty, set everything to -1 to ensure failure of the
                 // conditional expressions.
-                int hm = curAppointment == null ? -1 :
-                            Integer.parseInt(curAppointment.get("hour_min"));
-                int d = curAppointment == null ? -1 :
-                            Integer.parseInt(curAppointment.get("day"));
+                int hm = -1;
+                int d = -1;
+                if (curAppointment != Collections.<String, String>emptyMap()) {
+                    hm = Integer.parseInt(curAppointment.get("hour_min"));
+                    d = Integer.parseInt(curAppointment.get("day"));
+                }
                 // Current time and day has an appointment.
                 if ((hm == hourMin) && (d == curDay)) {
                     name = curAppointment.get("FirstName")
                            + curAppointment.get("LastName");
                     curTimeSlot.setDay(curDay, name);
                     ++appointmentIdx;
-                    curAppointment = appointments.get(appointmentIdx);
+                    try {
+                        curAppointment = appointments.get(appointmentIdx);
+                    }
+                    catch (IndexOutOfBoundsException e) {
+                        curAppointment = Collections.<String, String>emptyMap();
+                    }
+                    System.out.println(curTimeSlot);
                 }
                 else {
                     curTimeSlot.setDay(curDay, "");
