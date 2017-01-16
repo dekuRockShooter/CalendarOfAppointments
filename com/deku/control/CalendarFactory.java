@@ -76,6 +76,18 @@ public class CalendarFactory {
     }
 
     /**
+     * Factory method for getting a calendar for any week.
+     *
+     * @param cal a Calendar for a date of the week to show
+     * @return a TableView set to hold data for the current week
+     * @throws SQLException
+     */
+    public TableView getWeek(Calendar cal) throws SQLException {
+        curWeek = cal;
+        return init();
+    }
+
+    /**
      * Create the TableView.
      *
      * @return a TableView set to hold data for the given week
@@ -118,6 +130,7 @@ public class CalendarFactory {
             week.add(Calendar.DAY_OF_MONTH, 1);
             ++curHeader;
         }
+
         return headers;
     }
 
