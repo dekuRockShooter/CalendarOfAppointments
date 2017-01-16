@@ -113,9 +113,10 @@ public class NewAppointmentDialog {
                     String firstName = "";
                     String lastName = "";
                     String ssn = "";
-                    if (searchResultsListView.isVisible()) {
-                        Map<String, String> selection = searchResultsListView.
-                            getSelectionModel().getSelectedItem();
+                    Map<String, String> selection = searchResultsListView.
+                        getSelectionModel().getSelectedItem();
+                    if (searchResultsListView.isVisible()
+                        && (selection != null)) {
                         firstName = selection.get("FirstName");
                         lastName = selection.get("LastName");
                         ssn = selection.get("SSN");
@@ -123,6 +124,10 @@ public class NewAppointmentDialog {
                     else {
                         firstName = firstNameTxtField.getText();
                         lastName = lastNameTxtField.getText();
+                        // If this is true, then all fields are empty.
+                        if ((firstName == "") || (lastName == "")) {
+                            return null;
+                        }
                     }
                     AppointmentInfo info = new AppointmentInfo(firstName,
                                                                lastName,
