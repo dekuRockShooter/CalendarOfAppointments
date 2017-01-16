@@ -75,10 +75,13 @@ public class NewAppointmentDialog {
         dialog.setHeaderText("New Appointment");
         dialog.setResizable(true);
 
-        firstNameTxtField = new TextField("First name");
-        lastNameTxtField = new TextField("Last name");
+        firstNameTxtField = new TextField();
+        lastNameTxtField = new TextField();
         searchButton = new Button("search");
         fuzzyCheckBox = new CheckBox("Fuzzy search");
+
+        firstNameTxtField.setPromptText("First name");
+        lastNameTxtField.setPromptText("Last name");
 
         initButtons();
 
