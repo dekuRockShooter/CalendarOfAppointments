@@ -14,7 +14,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 
 
@@ -116,7 +118,7 @@ public class CalendarModel {
             + "INNER JOIN "
             + "    Patients AS p "
             + "    ON c.SSN = p.SSN "
-            + "WHERE WEEK(c.Time) = WEEK(%s) "
+            + "WHERE WEEK(c.Time) = WEEK('%s') "
             + "ORDER BY hour_min, day", keys[0], keys[1], keys[2], keys[3],
               date);
         Statement stmt = dbCon.createStatement();
@@ -137,10 +139,10 @@ public class CalendarModel {
             + "SELECT "
             + "    DAY(LAST_DAY(a.week_date)) AS %s, "
             + "    DAY(a.week_date) AS %s, "
-            + "    MONTH(a.week_date) AS s%, "
+            + "    MONTH(a.week_date) AS %s, "
             + "    YEAR(a.week_date) AS %s "
-            + "FROM (SELECT DATE_ADD(%s,"
-            + "      INTERVAL 1 - (SELECT DAYOFWEEK(%s)) DAY) "
+            + "FROM (SELECT DATE_ADD('%s', "
+            + "      INTERVAL 1 - (SELECT DAYOFWEEK('%s')) DAY) "
             + "      AS week_date) AS a", keys[0], keys[1], keys[2], keys[3],
               date, date);
         Statement stmt = dbCon.createStatement();
@@ -172,9 +174,10 @@ public class CalendarModel {
     private List<Map<String, String>> resultSetToMapList(String[] keys,
                                                          ResultSet rs)
             throws SQLException {
-        List<Map<String, String>> rsList = Collections.emptyList();
+        List<Map<String, String>> rsList = new ArrayList<>();
+        rs.beforeFirst();
         while (rs.next()) {
-            Map<String, String> map = Collections.emptyMap();
+            Map<String, String> map = new HashMap<>();
             for (String key : keys) {
                 map.put(key, rs.getString(key));
             }
