@@ -110,7 +110,23 @@ public class NewAppointmentDialog {
             @Override
             public AppointmentInfo call(ButtonType b) {
                 if (b == buttonTypeOk) {
-                    AppointmentInfo info = new AppointmentInfo();
+                    String firstName = "";
+                    String lastName = "";
+                    String ssn = "";
+                    if (searchResultsListView.isVisible()) {
+                        Map<String, String> selection = searchResultsListView.
+                            getSelectionModel().getSelectedItem();
+                        firstName = selection.get("FirstName");
+                        lastName = selection.get("LastName");
+                        ssn = selection.get("SSN");
+                    }
+                    else {
+                        firstName = firstNameTxtField.getText();
+                        lastName = lastNameTxtField.getText();
+                    }
+                    AppointmentInfo info = new AppointmentInfo(firstName,
+                                                               lastName,
+                                                               ssn);
                     return info;
                 }
                 return null;
@@ -165,11 +181,12 @@ public class NewAppointmentDialog {
 
         private String firstName;
         private String lastName;
-        private String datetime;
+        private String ssn;
 
-        public AppointmentInfo() {
-            this.firstName = "";
-            this.lastName = "";
+        public AppointmentInfo(String firstName, String lastName, String ssn) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.ssn = ssn;
         }
 
         public String getFirstName() {
@@ -178,6 +195,10 @@ public class NewAppointmentDialog {
 
         public String getLastName() {
             return lastName;
+        }
+
+        public String getSSN() {
+            return ssn;
         }
     }
 
