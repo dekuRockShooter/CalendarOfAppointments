@@ -100,7 +100,10 @@ public class NewAppointmentDialog {
         dialog.getDialogPane().setContent(grid);
 
         ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
+        ButtonType buttonTypeCancel = new ButtonType("Cancel",
+                                                     ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
+        dialog.getDialogPane().getButtonTypes().add(buttonTypeCancel);
 
         // Needed to return a correctly initialized AppointmentInfo object.
         dialog.setResultConverter(new Callback<ButtonType, AppointmentInfo>() {
