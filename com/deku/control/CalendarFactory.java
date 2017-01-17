@@ -35,6 +35,7 @@ import javafx.stage.WindowEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ButtonType;
+import javafx.scene.input.MouseButton;
 import javafx.util.Callback;
 
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class CalendarFactory {
     private static final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
                                           "Jun", "Jul", "Aug", "Sep", "Oct",
                                           "Nov", "Dec"};
-
+    private final Calendar[] dates = new Calendar[7];
     /**
      * Factory method for getting a calendar for the current week.
      *
@@ -128,7 +129,9 @@ public class CalendarFactory {
         headers[0] = "Time";
         Calendar week = dateCon.getWeek(curWeek);
         int curHeader = 1;
+        int datesIdx = 0;
         for (String day : days) {
+            dates[datesIdx] = (Calendar) week.clone();
             headers[curHeader] = String.format("%s %s %d, %d",
                                                day,
                                                months[week.get(Calendar.MONTH)],
@@ -136,6 +139,7 @@ public class CalendarFactory {
                                                week.get(Calendar.YEAR));
             week.add(Calendar.DAY_OF_MONTH, 1);
             ++curHeader;
+            ++datesIdx;
         }
 
         return headers;
@@ -357,9 +361,7 @@ public class CalendarFactory {
         contextMenu = new ContextMenu();
         MenuItem copy_item = new MenuItem("Copy");
         copy_item.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                System.out.println("About");
-                // TODO: set name and datetime of cell to copy.
+            public void handle(ActionEvent ev) {
             }
         });
         MenuItem paste_item = new MenuItem("Paste");
