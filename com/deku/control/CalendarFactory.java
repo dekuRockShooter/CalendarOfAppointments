@@ -41,6 +41,8 @@ import javafx.util.Callback;
 import java.util.Optional;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +72,15 @@ public class CalendarFactory {
                                           "Nov", "Dec"};
     private final Calendar[] dates = new Calendar[7];
     private TableCell<TimeSlot, String> contextCell;
+    // List of dates to copy to (those selected with ctrl + click).
+    // These can span calendars, so the static makes the data viewable
+    // by all instances and ensures that pasting will paste to all selected
+    // dates.
+    private final static List<Calendar> pasteList = new ArrayList<>();
+    private static Calendar copyDatetime = null; // Date to copy.
+    private static String copyFullName = ""; // Name to copy.
+    private int pasteCount; // How many times ctrl+click was done on this table
+
     /**
      * Factory method for getting a calendar for the current week.
      *
@@ -100,6 +111,7 @@ public class CalendarFactory {
      * @throws SQLException
      */
     private TableView init() throws SQLException {
+        pasteCount = 0;
         table = new TableView<>();
         final Label label = new Label("Cal");
         label.setFont(new Font("Arial", 20));
@@ -181,6 +193,8 @@ public class CalendarFactory {
                                 && event.isControlDown()) {
                                 TableCell c = (TableCell) event.getSource();
                                 c.setStyle("-fx-background-color:red");
+                                pasteList.add(getCalendar(c));
+                                ++pasteCount;
                             }
                             // Double click.
                             else if (event.getClickCount() > 1) {
@@ -405,13 +419,30 @@ public class CalendarFactory {
         MenuItem copy_item = new MenuItem("Copy");
         copy_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent ev) {
+                copyDatetime = getCalendar(contextCell);
+                copyFullName = contextCell.getText();
             }
         });
         MenuItem paste_item = new MenuItem("Paste");
         paste_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                // TODO: copy name and datetime to datetimes in pasteList.
-                System.out.println("Preferences");
+                // No selected cells, just a simple copy and paste into
+                // one cell.
+                if (pasteList.isEmpty()) {
+                    pasteList.add(getCalendar(contextCell));
+                    pasteCount = 1;
+                }
+                try {
+                    calendarCon.copy(copyDatetime,
+                                     pasteList.toArray(new Calendar[0]));
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+                copyDatetime = null;
+                copyFullName = "";
+                pasteList.clear();
+                pasteCount = 0;
             }
         });
         MenuItem delete_item = new MenuItem("Delete");
