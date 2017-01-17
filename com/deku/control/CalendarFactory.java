@@ -80,6 +80,9 @@ public class CalendarFactory {
     private static Calendar copyDatetime = null; // Date to copy.
     private static String copyFullName = ""; // Name to copy.
     private int pasteCount; // How many times ctrl+click was done on this table
+    private MenuItem copy_item;
+    private MenuItem paste_item;
+    private MenuItem delete_item;
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -244,6 +247,7 @@ public class CalendarFactory {
                             else if (event.getButton()
                                      == MouseButton.SECONDARY) {
                                 contextCell = cell;
+                                enableContextMenuItems();
                             }
                         }
 
@@ -425,7 +429,7 @@ public class CalendarFactory {
 
     private void initContextMenu() {
         contextMenu = new ContextMenu();
-        MenuItem copy_item = new MenuItem("Copy");
+        copy_item = new MenuItem("Copy");
         copy_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent ev) {
                 copyDatetime = getCalendar(contextCell);
@@ -433,7 +437,7 @@ public class CalendarFactory {
                 contextCell = null;
             }
         });
-        MenuItem paste_item = new MenuItem("Paste");
+        paste_item = new MenuItem("Paste");
         paste_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 // No selected cells, just a simple copy and paste into
@@ -449,6 +453,12 @@ public class CalendarFactory {
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
                 }
+                ListIterator<Calendar> iter =
+                    pasteList.listIterator(pasteList.size() - pasteCount);
+                Calendar cal = null;
+                while (iter.hasNext()) {
+                    cal = iter.next();
+                }
                 copyDatetime = null;
                 copyFullName = "";
                 pasteList.clear();
@@ -456,7 +466,7 @@ public class CalendarFactory {
                 contextCell = null;
             }
         });
-        MenuItem delete_item = new MenuItem("Delete");
+        delete_item = new MenuItem("Delete");
         delete_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 try {
@@ -471,6 +481,28 @@ public class CalendarFactory {
         contextMenu.getItems().addAll(copy_item, paste_item, delete_item);
     }
 
+    /**
+     * Set the availability of context menu items.  This disables or
+     * enables all context menu items.  This should be called whenever
+     * the context enu is opened.
+     */
+    private void enableContextMenuItems() {
+        // What to enable depending on the contents of the cell and if
+        // there is something to copy.
+        // empty | copy null || copy | delete | paste
+        //   T   |   T       ||  F   |   F    |   F
+        //   T   |   F       ||  F   |   F    |   T
+        //   F   |   T       ||  T   |   T    |   F
+        //   F   |   F       ||  T   |   T    |   F
+        //
+        // Enable paste iff the cell is empty and copyDatetime is not null.
+        // Enable copy iff the cell is not empty.
+        // Enable delete iff the cell is not empty.
+        boolean isEmpty = contextCell.getText() == "";
+        delete_item.setDisable(isEmpty);
+        copy_item.setDisable(isEmpty);
+        paste_item.setDisable(!isEmpty || (copyDatetime == null));
+    }
 
 
     // TODO: Try to change this to use PropertyValueFactory.
