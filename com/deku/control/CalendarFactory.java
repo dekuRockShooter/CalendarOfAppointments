@@ -64,6 +64,9 @@ public class CalendarFactory {
     // Column headers.
     private static final String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu",
                                           "Fri", "Sat"};
+    private static final String[] months = {"Jan", "Feb", "Mar", "Apr", "May",
+                                          "Jun", "Jul", "Aug", "Sep", "Oct",
+                                          "Nov", "Dec"};
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -126,9 +129,9 @@ public class CalendarFactory {
         Calendar week = dateCon.getWeek(curWeek);
         int curHeader = 1;
         for (String day : days) {
-            headers[curHeader] = String.format("%s %d %d, %d",
+            headers[curHeader] = String.format("%s %s %d, %d",
                                                day,
-                                               week.get(Calendar.MONTH) + 1,
+                                               months[week.get(Calendar.MONTH)],
                                                week.get(Calendar.DAY_OF_MONTH),
                                                week.get(Calendar.YEAR));
             week.add(Calendar.DAY_OF_MONTH, 1);
