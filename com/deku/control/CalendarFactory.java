@@ -83,6 +83,7 @@ public class CalendarFactory {
     private MenuItem copy_item;
     private MenuItem paste_item;
     private MenuItem delete_item;
+    private MenuItem lock_item;
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -478,7 +479,21 @@ public class CalendarFactory {
                 contextCell = null;
             }
         });
-        contextMenu.getItems().addAll(copy_item, paste_item, delete_item);
+        lock_item = new MenuItem("Lock");
+        lock_item.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                try {
+                    calendarCon.insert(getCalendar(contextCell), "0");
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+            }
+        });
+        contextMenu.getItems().addAll(copy_item,
+                                      paste_item,
+                                      delete_item,
+                                      lock_item);
     }
 
     /**
@@ -489,19 +504,23 @@ public class CalendarFactory {
     private void enableContextMenuItems() {
         // What to enable depending on the contents of the cell and if
         // there is something to copy.
-        // empty | copy null || copy | delete | paste
-        //   T   |   T       ||  F   |   F    |   F
-        //   T   |   F       ||  F   |   F    |   T
-        //   F   |   T       ||  T   |   T    |   F
-        //   F   |   F       ||  T   |   T    |   F
+        // empty | copy null || copy | delete | paste | lock
+        //   T   |   T       ||  F   |   F    |   F   |  T
+        //   T   |   F       ||  F   |   F    |   T   |  T
+        //   F   |   T       ||  T   |   T    |   F   |  F
+        //   F   |   F       ||  T   |   T    |   F   |  F
         //
         // Enable paste iff the cell is empty and copyDatetime is not null.
         // Enable copy iff the cell is not empty.
         // Enable delete iff the cell is not empty.
+        // Disable all if cell is XXXXXX.
+        // Disable lock iff  cell is not empty.
         boolean isEmpty = contextCell.getText() == "";
-        delete_item.setDisable(isEmpty);
-        copy_item.setDisable(isEmpty);
-        paste_item.setDisable(!isEmpty || (copyDatetime == null));
+        boolean isLocked = contextCell.getText().equals("XXXXXX");
+        delete_item.setDisable(isEmpty || isLocked);
+        copy_item.setDisable(isEmpty || isLocked);
+        paste_item.setDisable(!isEmpty || (copyDatetime == null) || isLocked);
+        lock_item.setDisable(!isEmpty);
     }
 
 
