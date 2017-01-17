@@ -430,6 +430,7 @@ public class CalendarFactory {
             public void handle(ActionEvent ev) {
                 copyDatetime = getCalendar(contextCell);
                 copyFullName = contextCell.getText();
+                contextCell = null;
             }
         });
         MenuItem paste_item = new MenuItem("Paste");
@@ -452,13 +453,19 @@ public class CalendarFactory {
                 copyFullName = "";
                 pasteList.clear();
                 pasteCount = 0;
+                contextCell = null;
             }
         });
         MenuItem delete_item = new MenuItem("Delete");
         delete_item.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                // TODO: delete datetime from database.
-                System.out.println("Preferences");
+                try {
+                    calendarCon.delete(getCalendar(contextCell));
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+                contextCell = null;
             }
         });
         contextMenu.getItems().addAll(copy_item, paste_item, delete_item);
