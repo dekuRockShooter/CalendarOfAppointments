@@ -362,6 +362,44 @@ public class CalendarFactory {
         }
     }
 
+    /**
+     * Get the Calendar object of a specific day.
+     *
+     * @param headerDate the date shown in a column in the header row
+     * @return the Calendar object associated with the given date
+     */
+    private Calendar getCalendar(String headerDate) {
+        int dayIdx = -0;
+        if (headerDate.startsWith("M")) dayIdx = 1;
+        else if (headerDate.startsWith("Tu")) dayIdx = 2;
+        else if (headerDate.startsWith("W")) dayIdx = 3;
+        else if (headerDate.startsWith("Th")) dayIdx = 4;
+        else if (headerDate.startsWith("F")) dayIdx = 5;
+        else if (headerDate.startsWith("Sa")) dayIdx = 6;
+        else if (headerDate.startsWith("Su")) dayIdx = 0;
+        else {}
+        return dates[dayIdx];
+    }
+
+    /**
+     * Get the Calendar object of a given TableCell.
+     *
+     * @param cell the TableCell to get the Calendar for
+     * @return a Calendar instance that holds the date and time of
+     *         the given TableCell
+     */
+    private Calendar getCalendar(TableCell<TimeSlot, String> cell) {
+        TableColumn<TimeSlot, String> col = cell.getTableColumn();
+        Calendar date = (Calendar) getCalendar(col.getText()).clone();
+        // Get time.
+        TableRow<TimeSlot> row = cell.getTableRow();
+        TimeSlot timeSlot = row.getItem();
+        String[] time = timeSlot.getDay(0).getValue().split(":");
+        date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time[0]));
+        date.set(Calendar.MINUTE, Integer.parseInt(time[1]));
+        return date;
+    }
+
     private void initContextMenu() {
         contextMenu = new ContextMenu();
         MenuItem copy_item = new MenuItem("Copy");
