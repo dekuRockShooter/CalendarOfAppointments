@@ -299,13 +299,18 @@ public class CalendarFactory {
         int hourMin = 0; // hhmm
         int appointmentIdx = 0; // The index in the list of the current map.
         String name = "";
+        String minStr = "";
+        String hourStr = "";
         // Iterate through all times (these are the rows).
         while (curHour < lastHour) {
             curDay = 1; // 1 is Sunday in MySQL.
             lastDay = 8; // 7 is Saturday in MySQL.
             hourMin = curHour*100 + curMin;
             TimeSlot curTimeSlot = new TimeSlot();
-            curTimeSlot.setDay(0, curHour + ":" + curMin);
+            // Prepend single digits with a zero before displaying them.
+            hourStr = curHour < 10 ? "0" + curHour : "" + curHour;
+            minStr = curMin < 10 ? "0" + curMin : "" + curMin;
+            curTimeSlot.setDay(0, hourStr + ":" + minStr);
             // For each time, iterate through all days from Sun to Sat.  If
             // there is an appointment for the current time and day, then
             // store it,
