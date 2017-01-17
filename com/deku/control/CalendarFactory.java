@@ -230,7 +230,8 @@ public class CalendarFactory {
                                             dialog.showAndWait();
                                         if (result.isPresent()) {
                                             insertIntoCal(result.get(), date,
-                                                          time, timeSlot);
+                                                          time, timeSlot,
+                                                          cell);
                                         }
                                     }
                                     catch (SQLException err) {
@@ -255,7 +256,8 @@ public class CalendarFactory {
                     private void insertIntoCal(AppointmentInfo info,
                                                String date,
                                                String time,
-                                               TimeSlot timeSlot)
+                                               TimeSlot timeSlot,
+                                               TableCell<TimeSlot, String> cell)
                             throws SQLException {
                         // TODO: convert date and time to Calendar
                         String ssn = info.getSSN();
@@ -264,9 +266,7 @@ public class CalendarFactory {
                                                      info.getLastName(),
                                                      "");
                         }
-                        calendarCon.insert(date + " " + time,
-                                           "%a %b %e, %Y %H:%i",
-                                           ssn);
+                        calendarCon.insert(getCalendar(cell), ssn);
                         // Display inserted name on the calendar.
                         int dayIdx = -1;
                         if (date.startsWith("M")) dayIdx = 2;
