@@ -191,17 +191,19 @@ public class CalendarFactory {
                                         new NewAppointmentDialog();
                                     try {
                                         dialog = newAppointment.getDialog();
+                                        Optional<AppointmentInfo> result =
+                                            dialog.showAndWait();
+                                        if (result.isPresent()) {
+                                            insertIntoCal(result.get(), date,
+                                                          time, timeSlot);
+                                        }
                                     }
                                     catch (SQLException err) {
                                         // Throw RuntimeException because this
                                         // method does not throw an
                                         // SQLException.
-                                        throw new RuntimeException(err.toString());
-                                    }
-                                    Optional<AppointmentInfo> result =
-                                        dialog.showAndWait();
-                                    if (result.isPresent()) {
-                                        System.out.println(result.get());
+                                        throw new RuntimeException(
+                                                    err.toString());
                                     }
                                 }
                                 else {
@@ -209,10 +211,42 @@ public class CalendarFactory {
                                 }
                             }
                         }
-                    });
-                    return cell;
-                }
-            };
+
+                    private void insertIntoCal(AppointmentInfo info,
+                                               String date,
+                                               String time,
+                                               TimeSlot timeSlot)
+                            throws SQLException {
+                        // TODO: convert date and time to Calendar
+                        String ssn = info.getSSN();
+                        if (ssn == "") {
+                             ssn = patientsCon.insert(info.getFirstName(),
+                                                     info.getLastName(),
+                                                     "");
+                        }
+                        calendarCon.insert(date + " " + time,
+                                           "%a %b %e, %Y %H:%i",
+                                           ssn);
+                        // Display inserted name on the calendar.
+                        int dayIdx = -1;
+                        if (date.startsWith("M")) dayIdx = 2;
+                        else if (date.startsWith("Tu")) dayIdx = 3;
+                        else if (date.startsWith("W")) dayIdx = 4;
+                        else if (date.startsWith("Th")) dayIdx = 5;
+                        else if (date.startsWith("F")) dayIdx = 6;
+                        else if (date.startsWith("Sa")) dayIdx = 7;
+                        else if (date.startsWith("Su")) dayIdx = 1;
+                        else {}
+                        timeSlot.setDay(dayIdx,
+                                        info.getFirstName()
+                                        + info.getLastName());
+                    }
+                });
+
+
+                return cell;
+            }
+        };
         String[] headers = initHeaders();
         int j = 0;
         final int NUM_DAYS = 8;
