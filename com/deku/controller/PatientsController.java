@@ -55,4 +55,18 @@ public class PatientsController {
         return model.searchNames(firstName, lastName);
     }
 
+     /**
+     * Insert a new person.
+     *
+     * @param firstName the first name of the person
+     * @param lastName the last name of the person
+     * @param ssn the SSN of the person
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public String insert(String firstName, String lastName, String ssn) 
+            throws SQLException, SQLTimeoutException {
+        return model.insertPatient(firstName, lastName, ssn);
+    }
+
 }
