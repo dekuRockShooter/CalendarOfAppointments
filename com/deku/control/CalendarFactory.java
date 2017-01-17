@@ -192,9 +192,18 @@ public class CalendarFactory {
                             if (event.getClickCount() == 1
                                 && event.isControlDown()) {
                                 TableCell c = (TableCell) event.getSource();
-                                c.setStyle("-fx-background-color:red");
-                                pasteList.add(getCalendar(c));
-                                ++pasteCount;
+                                if (c.getStyle() == "") {
+                                    c.setStyle("-fx-background-color:#00a000");
+                                    c.setOpacity(0.4);
+                                    pasteList.add(getCalendar(c));
+                                    ++pasteCount;
+                                }
+                                else {
+                                    c.setStyle("");
+                                    c.setOpacity(1.0);
+                                    pasteList.remove(getCalendar(c));
+                                    --pasteCount;
+                                }
                             }
                             // Double click.
                             else if (event.getClickCount() > 1) {
