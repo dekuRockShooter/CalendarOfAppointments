@@ -395,6 +395,11 @@ public class CalendarFactory {
 
         private TimeSlot() {
             this.days = new SimpleStringProperty[8];
+            int j = 0;
+            while (j < 8) {
+                days[j] = new SimpleStringProperty("");
+                ++j;
+            }
         }
 
         /**
@@ -412,7 +417,7 @@ public class CalendarFactory {
          */
         // TODO: throw out of bound error
         public void setDay(int day, String fName) {
-            days[day] = new SimpleStringProperty(fName);
+            days[day].setValue(fName);
         }
     }
 }
