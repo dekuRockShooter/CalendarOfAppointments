@@ -61,6 +61,45 @@ public class CalendarModel {
         stmt.executeUpdate(cmd);
     }
 
+    /**
+     * Insert a new patient.
+     *
+     * @param firstName the first name of the patient
+     * @param lastName the last name of the patient
+     * @param ssn the SSN of the patient.  This can be the empty string,
+     *            in which case the patient will be added with an
+     *            automatically generated SSN that starts with ~.  Such
+     *            SSNs should eventually be changed to a proper one. This
+     *            is mainly a workaround to let patients who are not yet
+     *            in the database to still have appointments be made for them.
+     *            Once information about them is available, their SSN needs
+     *            to be changed.
+     * @return the ssn.  This is only meaningful if the given ssn was empty.
+     */
+    public String insertPatient(String firstName, String lastName, String ssn)
+            throws SQLException, SQLTimeoutException {
+        // Assign an SSN if it's null.  ~ is prepended to denote that the
+        // program added it, not the user, and that the user should
+        // eventually change it.
+        String cmd = "";
+        if (ssn == "") {
+            cmd = "SELECT MAX(SSN) AS maxSSN FROM Patients";
+            Statement stmt = dbCon.createStatement();
+            ResultSet rs = stmt.executeQuery(cmd);
+            rs.first();
+            ssn = rs.getString("maxSSN");
+            int maxSSN = Integer.parseInt(ssn.substring(1));
+            ssn = "~" + (maxSSN + 1);
+        }
+        cmd = String.format(""
+            +"INSERT INTO Patients"
+            + "    (FirstName, LastName, SSN) "
+            + "VALUES ('%s', '%s', '%s')", firstName, lastName, ssn);
+        Statement stmt = dbCon.createStatement();
+        stmt.executeUpdate(cmd);
+        return ssn;
+    }
+
     public void delete(String datetime, String formatStr)
         throws SQLException, SQLTimeoutException {
         String cmdTime = String.format(""
