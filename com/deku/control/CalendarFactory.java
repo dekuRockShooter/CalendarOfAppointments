@@ -69,6 +69,7 @@ public class CalendarFactory {
                                           "Jun", "Jul", "Aug", "Sep", "Oct",
                                           "Nov", "Dec"};
     private final Calendar[] dates = new Calendar[7];
+    private TableCell<TimeSlot, String> contextCell;
     /**
      * Factory method for getting a calendar for the current week.
      *
@@ -216,6 +217,10 @@ public class CalendarFactory {
                                 else {
                                     System.err.println("edit");
                                 }
+                            }
+                            else if (event.getButton()
+                                     == MouseButton.SECONDARY) {
+                                contextCell = cell;
                             }
                         }
 
