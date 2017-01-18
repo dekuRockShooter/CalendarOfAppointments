@@ -309,6 +309,7 @@ public class CalendarFactory {
             ++j;
         }
         table.getColumns().get(0).setPrefWidth(COL_WIDTH_TIME);
+        table.getColumns().get(0).setContextMenu(null);
     }
 
     /**
