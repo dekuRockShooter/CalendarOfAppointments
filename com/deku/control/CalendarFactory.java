@@ -593,6 +593,9 @@ public class CalendarFactory {
                         if (j != idx) {
                             cols.get(j).setVisible(zoomOut);
                         }
+                        else {
+                            cols.get(j).setPrefWidth(zoomOut ? 100 : 700);
+                        }
                         ++j;
                     }
                 }
