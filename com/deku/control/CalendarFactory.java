@@ -229,8 +229,7 @@ public class CalendarFactory {
                                         Optional<AppointmentInfo> result =
                                             dialog.showAndWait();
                                         if (result.isPresent()) {
-                                            insertIntoCal(result.get(), date,
-                                                          time, timeSlot,
+                                            insertIntoCal(result.get(),
                                                           cell);
                                         }
                                     }
@@ -254,9 +253,6 @@ public class CalendarFactory {
                         }
 
                     private void insertIntoCal(AppointmentInfo info,
-                                               String date,
-                                               String time,
-                                               TimeSlot timeSlot,
                                                TableCell<TimeSlot, String> cell)
                             throws SQLException {
                         // TODO: convert date and time to Calendar
@@ -266,24 +262,11 @@ public class CalendarFactory {
                                                      info.getLastName(),
                                                      "");
                         }
-                        calendarCon.insert(getCalendar(cell), ssn);
-                        // Display inserted name on the calendar.
-                        int dayIdx = -1;
-                        if (date.startsWith("M")) dayIdx = 2;
-                        else if (date.startsWith("Tu")) dayIdx = 3;
-                        else if (date.startsWith("W")) dayIdx = 4;
-                        else if (date.startsWith("Th")) dayIdx = 5;
-                        else if (date.startsWith("F")) dayIdx = 6;
-                        else if (date.startsWith("Sa")) dayIdx = 7;
-                        else if (date.startsWith("Su")) dayIdx = 1;
-                        else {}
-                        timeSlot.setDay(dayIdx,
-                                        info.getFirstName()
-                                        + info.getLastName());
+                        Calendar cal = getCalendar(cell);
+                        calendarCon.insert(cal, ssn);
+                        setName(cell, info.getFirstName(), info.getLastName());
                     }
                 });
-
-
                 return cell;
             }
         };
@@ -309,6 +292,35 @@ public class CalendarFactory {
             table.getColumns().add(col);
             ++j;
         }
+    }
+
+    /**
+     * Sets the name of a given cell.  Given a cell, this method updates
+     * the name that it displays.
+     *
+     * @param cell the TableCell to update the name of
+     * @param firstName the first name to show
+     * @param lastName the last name to show
+     */
+    private void setName(TableCell<TimeSlot, String> cell,
+                    String firstName,
+                    String lastName) {
+        Calendar cal = getCalendar(cell);
+        TableRow<TimeSlot> row = cell.getTableRow();
+        TimeSlot timeSlot = row.getItem();
+        // Given a Calendar, get its column index.
+        int dayIdx = -1;
+        switch (cal.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY: dayIdx = 2; break;
+            case Calendar.TUESDAY: dayIdx = 3; break;
+            case Calendar.WEDNESDAY: dayIdx = 4; break;
+            case Calendar.THURSDAY: dayIdx = 5; break;
+            case Calendar.FRIDAY: dayIdx = 6; break;
+            case Calendar.SATURDAY: dayIdx = 7; break;
+            case Calendar.SUNDAY: dayIdx = 1; break;
+            default: break;
+        }
+        timeSlot.setDay(dayIdx, firstName + lastName);
     }
 
     /**
@@ -476,6 +488,7 @@ public class CalendarFactory {
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
                 }
+                setName(contextCell, "", "");
                 contextCell = null;
             }
         });
