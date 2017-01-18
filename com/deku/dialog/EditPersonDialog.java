@@ -98,7 +98,8 @@ public class EditPersonDialog {
     private void initAddRemoveHBox() {
         addRemoveHBox = new HBox();
         Button addButton = new Button("Add");
-        Button removeButton = new Button("Remove");
+        Button hideButton = new Button("Hide");
+
         addButton.setOnAction(e -> {
             TextInputDialog addDialog = new TextInputDialog();
             Optional<String> result = addDialog.showAndWait();
@@ -107,7 +108,14 @@ public class EditPersonDialog {
                 data.add("test");
             }
         });
-        addRemoveHBox.getChildren().addAll(addButton, removeButton);
+
+        hideButton.setOnAction(e -> {
+            int selectedIdx = optionsListView.getSelectionModel()
+                .getSelectedIndex();
+            data.remove(selectedIdx);
+        });
+
+        addRemoveHBox.getChildren().addAll(addButton, hideButton);
     }
 
     private void initListView() {
