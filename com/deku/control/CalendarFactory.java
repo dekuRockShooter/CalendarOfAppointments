@@ -88,6 +88,7 @@ public class CalendarFactory {
     private MenuItem lock_item;
     private static final int COL_WIDTH_DEFAULT = 150;
     private static final int COL_WIDTH_ZOOM = 400;
+    private static final int COL_WIDTH_TIME = 64;
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -307,6 +308,7 @@ public class CalendarFactory {
             table.getColumns().add(col);
             ++j;
         }
+        table.getColumns().get(0).setPrefWidth(COL_WIDTH_TIME);
     }
 
     /**
