@@ -61,6 +61,7 @@ public class EditPersonDialog {
 
     private Dialog<String> dialog;
     private GridPane grid;
+    private HBox addRemoveHBox;
     private ListView<String> optionsListView;
     private ObservableList<String> data = FXCollections.observableArrayList(
                 "chocolate", "salmon", "gold", "coral", "darkorchid",
@@ -80,16 +81,33 @@ public class EditPersonDialog {
         dialog.setHeaderText("Edit person");
         dialog.setResizable(true);
 
+        initAddRemoveHBox();
         initListView();
 
         grid = new GridPane();
-        grid.add(optionsListView, 1, 1);
+        grid.add(addRemoveHBox, 1, 1);
+        grid.add(optionsListView, 1, 2);
         dialog.getDialogPane().setContent(grid);
 
         ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
 
         return dialog;
+    }
+
+    private void initAddRemoveHBox() {
+        addRemoveHBox = new HBox();
+        Button addButton = new Button("Add");
+        Button removeButton = new Button("Remove");
+        addButton.setOnAction(e -> {
+            TextInputDialog addDialog = new TextInputDialog();
+            Optional<String> result = addDialog.showAndWait();
+            if (result.isPresent()) {
+                String optionName = result.get();
+                data.add("test");
+            }
+        });
+        addRemoveHBox.getChildren().addAll(addButton, removeButton);
     }
 
     private void initListView() {
