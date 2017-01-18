@@ -57,22 +57,39 @@ import com.deku.controller.PatientsController;
 // Idea for adding a layout to a cell:
 // http://stackoverflow.com/questions/15661500/javafx-listview-item-with-an-image-button
 
+
 public class EditPersonDialog {
 
+    private String ssn; // SSN of the person whose data is shown.
     private Dialog<String> dialog;
     private GridPane grid;
     private HBox addRemoveHBox;
-    private ListView<String> optionsListView;
-    private ObservableList<String> data = FXCollections.observableArrayList(
-                "chocolate", "salmon", "gold", "coral", "darkorchid",
-                "darkgoldenrod", "lightsalmon", "black", "rosybrown", "blue",
-                "blueviolet", "brown");
+    private ListView<Map<String, String>> optionsListView;
+    // Map of data to values.  The keys (names of data options) are the
+    // labels, and the values (values of each data option) are editable.
+    private ObservableList<Map<String, String>> data;
 
     private PatientsController patientCon;
 
-    public EditPersonDialog() {
+    /**
+     * Create a new instance of this class.  The instantiated object can
+     * be used to create a dialog that shows data about the person with
+     * the given SSN.
+     *
+     * @param ssn the SSN of the person to show data for
+     */
+    public EditPersonDialog(String ssn) {
+        this.ssn = ssn;
     }
 
+    /**
+     * Get a dialog that shows data for a person.  The data is shown for
+     * the person whose SSN is given in the constructor.  The dialog has
+     * editable values so that each piece of data can be modified.
+     *
+     * @return a dialog that shows data for a person
+     * @throws SQLException
+     */
     public Dialog getDialog() throws SQLException {
         patientCon = new PatientsController();
 
@@ -95,6 +112,9 @@ public class EditPersonDialog {
         return dialog;
     }
 
+    /**
+     * Create the buttons to modify the list of options.
+     */
     private void initAddRemoveHBox() {
         addRemoveHBox = new HBox();
         Button addButton = new Button("Add");
@@ -105,7 +125,7 @@ public class EditPersonDialog {
             Optional<String> result = addDialog.showAndWait();
             if (result.isPresent()) {
                 String optionName = result.get();
-                data.add("test");
+                //data.add("test");
             }
         });
 
@@ -118,18 +138,38 @@ public class EditPersonDialog {
         addRemoveHBox.getChildren().addAll(addButton, hideButton);
     }
 
-    private void initListView() {
+    /**
+     * Create the ListView that shows the editable data.  The ListView
+     * uses an Options cell factory to create a custom view for each
+     * cell that includes a Label and a TextField.
+     */
+    private void initListView() throws SQLException {
+        data = FXCollections.observableArrayList();
         optionsListView = new ListView<>();
+        List<Map<String, String>> res = patientCon.getData(ssn);
+        data.addAll(res);
         optionsListView.setItems(data);
-        optionsListView.setCellFactory((ListView<String> l) -> new Options());
+        optionsListView.setCellFactory(
+                (ListView<Map<String, String>> l) -> new Options());
     }
 
 
-    static class Options extends ListCell<String> {
+    /**
+     * A class that defines a layout for each cell in the ListView.  This
+     * is a cell factory for the ListView that should be set using
+     * listView.setCellFactory(...).  It consists of a Label and a
+     * TextField.  The label shows the name of a piece of data, and
+     * the textfield shows the current value of the data that can
+     * also be edited.
+     */
+    static class Options extends ListCell<Map<String, String>> {
         private TextField textField;
         private Label label;
         private HBox hBox;
 
+        /**
+         * Default constructor.
+         */
         public Options() {
             textField = new TextField();
             label = new Label();
@@ -137,14 +177,14 @@ public class EditPersonDialog {
         }
 
         @Override
-        public void updateItem(String item, boolean empty) {
+        public void updateItem(Map<String, String> item, boolean empty) {
             super.updateItem(item, empty);
             if (item != null) {
                 // The clear is needed to fix an IllegalArgumentException
                 // "duplicate children added"
                 hBox.getChildren().clear();
-                label.setText(item);
-                textField.setText(item);
+                label.setText(item.get("option")); // TODO: no hardcode.
+                textField.setText(item.get("value"));
                 hBox.getChildren().addAll(label, textField);
                 setGraphic(hBox);
             }
