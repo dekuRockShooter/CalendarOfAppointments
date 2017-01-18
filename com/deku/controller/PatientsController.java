@@ -64,9 +64,28 @@ public class PatientsController {
      * @throws SQLException if there is any error with the database
      * @throws SQLTimeoutException if there is any error with the database
      */
-    public String insert(String firstName, String lastName, String ssn) 
+    public String insert(String firstName, String lastName, String ssn)
             throws SQLException, SQLTimeoutException {
         return model.insertPatient(firstName, lastName, ssn);
+    }
+
+     /**
+     * Get all available data about a person.
+     *
+     * @param ssn the SSN of the person
+     * @return a list of maps that represent a different piece of
+     *         data for the person.  The keys for each map are option
+     *         and value.
+     *         The value of the 'option' key is the name of the data option.
+     *         The value of the 'value' key is the value of the data option.
+     *         If the person does not have a piece of data initialized,
+     *         then value of 'value' is "NULL".
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Map<String, String>> getData(String ssn)
+            throws SQLException, SQLTimeoutException {
+        return model.getData(ssn);
     }
 
 }

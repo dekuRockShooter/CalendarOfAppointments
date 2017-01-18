@@ -139,11 +139,11 @@ public class CalendarModel {
      *
      * @param date a Calendar instance specifying the week
      */
-    public List<Map<String, String>> getAppointments(String date) 
+    public List<Map<String, String>> getAppointments(String date)
             throws SQLException, SQLTimeoutException {
         // Get first name, last name, hour, minuute, day of week, month,
         // and year of all patients of the given week.
-        String[] keys = {"day", "hour_min", 
+        String[] keys = {"day", "hour_min",
                          "month", "year", "FirstName", "LastName"};
         String cmd = String.format(""
             + "SELECT "
@@ -172,7 +172,7 @@ public class CalendarModel {
         // Get first day of week, the month the week starts in, the year the
         // week starts in, and the last day of the month that the week start
         // in from a given week.
-        String[] keys = {"last_day_of_month", "first_day_of_week", 
+        String[] keys = {"last_day_of_month", "first_day_of_week",
                          "cur_month", "cur_year"};
         String cmd = String.format(""
             + "SELECT "
@@ -222,6 +222,38 @@ public class CalendarModel {
             }
             rsList.add(map);
         }
+        return rsList;
+    }
+
+     /**
+     * Get all available data about a person.
+     *
+     * @param ssn the SSN of the person
+     * @return a list of maps that represent a different piece of
+     *         data for the person.  The keys for each map are option
+     *         and value.
+     *         The value of the 'option' key is the name of the data option.
+     *         The value of the 'value' key is the value of the data option.
+     *         If the person does not have a piece of data initialized,
+     *         then value of 'value' is "NULL".
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Map<String, String>> getData(String ssn)
+            throws SQLException, SQLTimeoutException {
+        String[] keys = {"option", "value"};
+        String cmd = String.format(""
+            + "SELECT "
+            + "    pdo.Option as option, "
+            + "    pd.Value as value "
+            + "FROM PatientDataOptions AS pdo "
+            + "    LEFT OUTER JOIN PatientData AS pd "
+            + "    ON pd.SSN = '%s' AND pd.Option = pdo.Option",
+            ssn);
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        List<Map<String, String>> rsList = resultSetToMapList(keys, rs);
+        rs.close();
         return rsList;
     }
 
