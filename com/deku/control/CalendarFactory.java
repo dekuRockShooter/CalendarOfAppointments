@@ -86,6 +86,8 @@ public class CalendarFactory {
     private MenuItem paste_item;
     private MenuItem delete_item;
     private MenuItem lock_item;
+    private static final int COL_WIDTH_DEFAULT = 150;
+    private static final int COL_WIDTH_ZOOM = 400;
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -288,7 +290,7 @@ public class CalendarFactory {
         // Create tables.
         while (j < NUM_DAYS) {
             TableColumn<TimeSlot, String> col = new TableColumn<>(headers[j]);
-            col.setMinWidth(100);
+            col.setPrefWidth(COL_WIDTH_DEFAULT);
             final int day_idx = j;
             col.setCellFactory(cellFactory);
             // Define what each column returns.
@@ -594,7 +596,9 @@ public class CalendarFactory {
                             cols.get(j).setVisible(zoomOut);
                         }
                         else {
-                            cols.get(j).setPrefWidth(zoomOut ? 100 : 700);
+                            cols.get(j).setPrefWidth(zoomOut ?
+                                                     COL_WIDTH_DEFAULT :
+                                                     COL_WIDTH_ZOOM);
                         }
                         ++j;
                     }
