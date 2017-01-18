@@ -131,6 +131,7 @@ public class CalendarFactory {
         initData();
         initColumns();
         table.setItems(data);
+        // This needs to be after initData, initColumns, and table.setItems!
         initContextMenu();
         table.setContextMenu(contextMenu);
         return table;
@@ -300,6 +301,7 @@ public class CalendarFactory {
                             return p.getValue().getDay(day_idx);
                         }
                     });
+            col.setContextMenu(initColumnContextMenu(day_idx));
             table.getColumns().add(col);
             ++j;
         }
@@ -523,6 +525,83 @@ public class CalendarFactory {
                                       delete_item,
                                       lock_item);
     }
+
+    /**
+     * Create the context menu for the header row columns.  The context
+     * menu for the table does not work properly for the header row.
+     * There is no way to get the Node object that represents a cell
+     * in the header row (contextCell is null even if the click is on
+     * a header row cell).  The workaround is to set a context menu for
+     * each individual cell and attach an identifier to it in order to
+     * know which cell the menu was opened for.
+     *
+     * @param colIdx the index of the cell in the header row
+     * @return the context menu for the cell at the given index
+     */
+    private ContextMenu initColumnContextMenu(final int colIdx) {
+        return (new ColumnContextMenu(colIdx)).getInstance(table);
+    }
+
+
+    /**
+     * A context menu for cells in the header row.  This class is needed to
+     * create a context menu that can identify for which header row cell
+     * the context menu was opened (there is currently no direct way of
+     * getting the row header cell Node object).
+     *
+     * This class only has one method: getInstance(...) which is what
+     * should be called in order to get the actual context menu.
+     *
+     * This context menu is tailored for a given cell.  Specifically, the
+     * zoom option zooms in on the cell over which the context menu was
+     * opened.
+     */
+    private static class ColumnContextMenu {
+        static private boolean zoomOut = true; // Show all columns or one.
+        private int idx; // Index of the cell in the header row.
+        private MenuItem zoom_item;
+
+        /**
+         * Create a context menu for the header row cell at the given index.
+         *
+         * @param colIdx the index of the header row cell
+         */
+        public ColumnContextMenu(int colIdx) {
+            idx = colIdx;
+        }
+
+        /**
+         * Get the context menu for the header row cell.  This creates
+         * the context menu for the header row cell at the index given
+         * on object instantiation.
+         *
+         * @param table the TableView to which the header row cell belongs
+         * @return a ContextMenu object made for the header row cell
+         *         at the assiciated index
+         */
+        public ContextMenu getInstance(TableView table) {
+            ContextMenu columnContextMenu = new ContextMenu();
+            zoom_item = new MenuItem("Zoom");
+            zoom_item.setOnAction(new EventHandler<ActionEvent>() {
+
+                public void handle(ActionEvent ev) {
+                    ObservableList<TableColumn<TimeSlot, ?>> cols
+                        = table.getColumns();
+                    zoomOut = !zoomOut;
+                    int j = 1; // Skip Time column.
+                    while (j < cols.size()) {
+                        if (j != idx) {
+                            cols.get(j).setVisible(zoomOut);
+                        }
+                        ++j;
+                    }
+                }
+            });
+
+            columnContextMenu.getItems().addAll(zoom_item);
+            return columnContextMenu;
+        }
+    };
 
     /**
      * Set the availability of context menu items.  This disables or
