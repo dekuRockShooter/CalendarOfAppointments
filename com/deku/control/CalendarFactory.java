@@ -77,6 +77,8 @@ public class CalendarFactory {
     // by all instances and ensures that pasting will paste to all selected
     // dates.
     private final static List<Calendar> pasteList = new ArrayList<>();
+    private final static List<TableCell<TimeSlot, String>> pasteCellList =
+        new ArrayList<>();
     private static Calendar copyDatetime = null; // Date to copy.
     private static String copyFullName = ""; // Name to copy.
     private int pasteCount; // How many times ctrl+click was done on this table
@@ -200,12 +202,14 @@ public class CalendarFactory {
                                     c.setStyle("-fx-background-color:#00a000");
                                     c.setOpacity(0.4);
                                     pasteList.add(getCalendar(c));
+                                    pasteCellList.add(c);
                                     ++pasteCount;
                                 }
                                 else {
                                     c.setStyle("");
                                     c.setOpacity(1.0);
                                     pasteList.remove(getCalendar(c));
+                                    pasteCellList.remove(c);
                                     --pasteCount;
                                 }
                             }
@@ -457,6 +461,7 @@ public class CalendarFactory {
                 // one cell.
                 if (pasteList.isEmpty()) {
                     pasteList.add(getCalendar(contextCell));
+                    pasteCellList.add(contextCell);
                     pasteCount = 1;
                 }
                 try {
@@ -466,15 +471,18 @@ public class CalendarFactory {
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
                 }
-                ListIterator<Calendar> iter =
-                    pasteList.listIterator(pasteList.size() - pasteCount);
-                Calendar cal = null;
+                ListIterator<TableCell<TimeSlot, String>> iter =
+                    pasteCellList.listIterator(pasteCellList.size()
+                                               - pasteCount);
+                TableCell<TimeSlot, String> cell = null;
                 while (iter.hasNext()) {
-                    cal = iter.next();
+                    cell = iter.next();
+                    setName(cell, copyFullName, "");
                 }
                 copyDatetime = null;
                 copyFullName = "";
                 pasteList.clear();
+                pasteCellList.clear();
                 pasteCount = 0;
                 contextCell = null;
             }
