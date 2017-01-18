@@ -198,7 +198,10 @@ public class CalendarFactory {
                             if (event.getClickCount() == 1
                                 && event.isControlDown()) {
                                 TableCell c = (TableCell) event.getSource();
-                                if (c.getStyle() == "") {
+                                if (c.getText().equals("XXXXXX")) {
+                                    // No selecting allowed for locked cells.
+                                }
+                                else if (c.getStyle() == "") {
                                     c.setStyle("-fx-background-color:#00a000");
                                     c.setOpacity(0.4);
                                     pasteList.add(getCalendar(c));
@@ -216,6 +219,10 @@ public class CalendarFactory {
                             // Double click.
                             else if (event.getClickCount() > 1) {
                                 TableCell cell = (TableCell) event.getSource();
+                                if (cell.getText().equals("XXXXXX")) {
+                                    // No editing of locked cells.
+                                    return;
+                                }
                                 TableColumn<TimeSlot, String> col =
                                     cell.getTableColumn();
                                 String name = cell.getText();
