@@ -73,6 +73,10 @@ import com.deku.controller.DataOptionsController;
 // http://stackoverflow.com/questions/15661500/javafx-listview-item-with-an-image-button
 
 
+// TODO: This class contains too many overlapping loops.  That is, one loop
+// iterates over a list, and a loop in the same scope iterates over another
+// list that contains a subset of the list in the first loop.  This needs
+// to be fixed.  Use Sets?
 public class EditPersonDialog {
 
     private String ssn; // SSN of the person whose data is shown.
@@ -264,9 +268,17 @@ public class EditPersonDialog {
         });
 
         showButton.setOnAction(e -> {
-            List<String> optionsList = new ArrayList<>();
-            optionsList.addAll(originalDataMap.keySet());
-            CheckboxDialog dialog = new CheckboxDialog(optionsList,
+            List<String> visibleOptList = new ArrayList<>();
+            List<String> hiddenOptList = new ArrayList<>();
+            hiddenOptList.addAll(originalDataMap.keySet());
+            // Move visible options from the hidden list to the visible list.
+            for (Map<String, String> optMap : data) {
+                String opt = optMap.get("option");
+                hiddenOptList.remove(opt);
+                visibleOptList.add(opt);
+            }
+            CheckboxDialog dialog = new CheckboxDialog(visibleOptList,
+                                                       hiddenOptList,
                                                        "Data to show");
             Dialog<List<String>> cbDialog = dialog.getDialog();
             Optional<List<String>> result = cbDialog.showAndWait();
