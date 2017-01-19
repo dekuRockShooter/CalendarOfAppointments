@@ -58,6 +58,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 import java.sql.SQLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.charset.Charset;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
 import com.deku.controller.PatientsController;
 import com.deku.controller.DataOptionsController;
@@ -84,6 +90,8 @@ public class EditPersonDialog {
     // data options.
     private Map<String, String> originalDataMap;
     private Map<String, TextField> dirtyMap;
+    private static final Path visibleOptionsFilePath
+        = Paths.get("./visibleOptions");
 
     private PatientsController patientCon;
 
@@ -154,23 +162,35 @@ public class EditPersonDialog {
         final Button okayButton = (Button) dialog.getDialogPane()
             .lookupButton(buttonTypeOk);
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
-            for (Map<String, String> options : data) {
-                String curOption = options.get("option");
-                // Save changed data.
-                if (dirtyMap.containsKey(curOption)) {
-                    String newValue = dirtyMap.get(curOption).getText();
-                    try {
-                        if (date == null) {
-                            patientCon.setData(ssn, curOption, newValue);
+            try {
+                BufferedWriter writer = Files.newBufferedWriter(
+                        visibleOptionsFilePath,
+                        Charset.forName("utf-8"));
+                for (Map<String, String> options : data) {
+                    String curOption = options.get("option");
+                    // Save changed data.
+                    if (dirtyMap.containsKey(curOption)) {
+                        String newValue = dirtyMap.get(curOption).getText();
+                        try {
+                            if (date == null) {
+                                patientCon.setData(ssn, curOption, newValue);
+                            }
+                            else {
+                                patientCon.setData(date, curOption, newValue);
+                            }
                         }
-                        else {
-                            patientCon.setData(date, curOption, newValue);
+                        catch (SQLException err) {
+                            throw new RuntimeException(err.toString());
                         }
                     }
-                    catch (SQLException err) {
-                        throw new RuntimeException(err.toString());
-                    }
+                    // Save data about which options are visible.
+                    writer.write(options.get("option"));
+                    writer.newLine();
                 }
+                writer.close();
+            }
+            catch (IOException err) {
+                throw new RuntimeException(err.toString());
             }
         });
 
