@@ -65,8 +65,10 @@ import java.sql.SQLException;
  */
 public class CheckboxDialog {
 
-    // Labels of each checkbox.
+    // Labels of each checkbox that are unselected by default.
     private List<String> checkList;
+    // Labels of each checkbox that are selected by default.
+    private List<String> checkedList;
     private String title;
 
     /**
@@ -78,8 +80,29 @@ public class CheckboxDialog {
      */
     public CheckboxDialog(List<String> checkList, String title) {
         this.checkList = checkList;
+        this.checkedList = Collections.emptyList();
         this.title = title;
     }
+
+    /**
+     * Create a new instance of this class.  The instantiated object can
+     * be used to create a dialog that shows a list of checkboxes.  This
+     * constructor allows defining which checkboxes are pre-selected.
+     *
+     * @param selectedList a list of labels for the checkboxes that should
+     *                     be checked by default
+     * @param unselectedList a list of labels for the checkboxes that should
+     *                     be unchecked by default
+     * @param title the title to show for the dialog
+     */
+    public CheckboxDialog(List<String> selectedList,
+                          List<String> unselectedList,
+                          String title) {
+        this.checkList = unselectedList;
+        this.checkedList = selectedList;
+        this.title = title;
+    }
+
 
     /**
      * Get a dialog that shows checkboxes.  The labels for each checkbox
@@ -106,6 +129,11 @@ public class CheckboxDialog {
             CheckBox checkbox = new CheckBox(label);
             vbox.getChildren().add(checkbox);
         }
+        for (String label : checkedList) {
+            CheckBox checkbox = new CheckBox(label);
+            checkbox.setSelected(true);
+            vbox.getChildren().add(checkbox);
+        }
         dialog.getDialogPane().setContent(vbox);
         dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
 
@@ -115,7 +143,7 @@ public class CheckboxDialog {
             public List<String> call(ButtonType b) {
                 if (b == buttonTypeOk) {
                     List<String> selectedList = new ArrayList<>(
-                            checkList.size());
+                            checkedList.size());
                     for (Node node : vbox.getChildren()) {
                         CheckBox cb = (CheckBox) node;
                         if (cb.isSelected()) {
