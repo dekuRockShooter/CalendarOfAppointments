@@ -54,6 +54,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
 import java.sql.SQLException;
 
 import com.deku.controller.PatientsController;
@@ -69,6 +71,7 @@ public class EditPersonDialog {
     private Dialog<String> dialog;
     private GridPane grid;
     private HBox addRemoveHBox;
+    private ButtonType buttonTypeOk;
     private ListView<Map<String, String>> optionsListView;
     // Map of data to values.  The keys (names of data options) are the
     // labels, and the values (values of each data option) are editable.
@@ -78,7 +81,7 @@ public class EditPersonDialog {
     // This will never decrease in size, but may increase if the user adds
     // data options.
     private Map<String, String> originalDataMap;
-    // A list of all data options available in the database.
+    private Set<String> dirtySet;
 
     private PatientsController patientCon;
 
@@ -119,6 +122,7 @@ public class EditPersonDialog {
      */
     public Dialog getDialog() throws SQLException {
         patientCon = new PatientsController();
+        dirtySet = new HashSet<>();
 
         dialog = new Dialog<>();
         dialog.setTitle("Edit person");
@@ -134,10 +138,23 @@ public class EditPersonDialog {
         grid.add(optionsListView, 1, 2);
         dialog.getDialogPane().setContent(grid);
 
-        ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
+        buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
+        initOkayButtonHandler();
 
         return dialog;
+    }
+
+    private void initOkayButtonHandler() {
+        final Button okayButton = (Button) dialog.getDialogPane()
+            .lookupButton(buttonTypeOk);
+        okayButton.addEventFilter(ActionEvent.ACTION, event -> {
+            System.err.println(dirtySet);
+            for (Map<String, String> optionMap : data) {
+                System.err.println(dirtySet);
+            }
+        });
+
     }
 
     /**
@@ -169,19 +186,22 @@ public class EditPersonDialog {
                 // though).
                 initListView();
                 grid.add(optionsListView, 1, 2);
-                // TODO: save to config file.
+                // TODO: on Okay, save the options in 'data' (the ones that
+                // are visible) to a file and commit all changes.
             }
         });
 
         hideButton.setOnAction(e -> {
             int selectedIdx = optionsListView.getSelectionModel()
                 .getSelectedIndex();
-            data.remove(selectedIdx);
+            Map<String, String> optionMap = data.remove(selectedIdx);
+            dirtySet.remove(optionMap.get("option"));
             // A new ListView is created for pretty much the same reason
             // why one was created above in addButton's handler.
             initListView();
             grid.add(optionsListView, 1, 2);
-            // TODO: save to config file.
+            // TODO: on Okay, save the options in 'data' (the ones that
+            // are visible) to a file and commit all changes.
         });
 
         showButton.setOnAction(e -> {
@@ -214,6 +234,8 @@ public class EditPersonDialog {
                 }
                 initListView();
                 grid.add(optionsListView, 1, 2);
+                // TODO: on Okay, save the options in 'data' (the ones that
+                // are visible) to a file and commit all changes.
             }
         });
 
@@ -265,7 +287,7 @@ public class EditPersonDialog {
      * the textfield shows the current value of the data that can
      * also be edited.
      */
-    static class Options extends ListCell<Map<String, String>> {
+    private class Options extends ListCell<Map<String, String>> {
         private TextField textField;
         private Label label;
         private HBox hBox;
@@ -288,6 +310,9 @@ public class EditPersonDialog {
                 hBox.getChildren().clear();
                 label.setText(item.get("option")); // TODO: no hardcode.
                 textField.setText(item.get("value"));
+                textField.setOnKeyPressed( event -> {
+                    dirtySet.add(item.get("option"));
+                });
                 hBox.getChildren().addAll(label, textField);
                 setGraphic(hBox);
             }
