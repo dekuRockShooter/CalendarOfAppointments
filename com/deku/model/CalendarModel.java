@@ -313,4 +313,28 @@ public class CalendarModel {
             stmt.executeUpdate(cmd);
         }
     }
+
+    /**
+     * Create a new data option.  The new data option becomes a piece of
+     * data that can be applied to any person.
+     *
+     * @param option the name of the data option to create
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     * @throws SQLIntegrityConstraintViolationException if the option
+     *         already exists
+     */
+    public void setData(String option)
+            throws SQLException,
+                   SQLTimeoutException,
+                   SQLIntegrityConstraintViolationException {
+        String cmd = String.format(""
+                + "INSERT INTO PatientDataOptions "
+                + "    (Option) "
+                + "VALUES "
+                + "    ('%s')",
+                option);
+        Statement stmt = dbCon.createStatement();
+        stmt.executeUpdate(cmd);
+    }
 }

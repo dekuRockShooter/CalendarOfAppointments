@@ -44,6 +44,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Alert;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -59,6 +60,7 @@ import java.util.HashSet;
 import java.sql.SQLException;
 
 import com.deku.controller.PatientsController;
+import com.deku.controller.DataOptionsController;
 
 // Idea for adding a layout to a cell:
 // http://stackoverflow.com/questions/15661500/javafx-listview-item-with-an-image-button
@@ -187,6 +189,24 @@ public class EditPersonDialog {
             TextInputDialog addDialog = new TextInputDialog();
             Optional<String> result = addDialog.showAndWait();
             if (result.isPresent()) {
+                // Insert option into database
+                boolean optCreationSuccessful = false;
+                try {
+                    DataOptionsController dataOpsCon
+                        = new DataOptionsController();
+                    optCreationSuccessful = dataOpsCon.createOption(
+                            result.get());
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+                if (!optCreationSuccessful) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR,
+                                            "Data option already exists");
+                    alert.showAndWait();
+                    e.consume();
+                    return;
+                }
                 Map<String, String> m = new HashMap<>();
                 m.put("option", result.get());
                 m.put("value", null);
