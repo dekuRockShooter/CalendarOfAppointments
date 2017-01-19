@@ -48,10 +48,12 @@ import javafx.util.Callback;
 import javafx.collections.*;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Calendar;
+import java.util.Collections;
 import java.sql.SQLException;
 
 import com.deku.controller.PatientsController;
@@ -70,7 +72,13 @@ public class EditPersonDialog {
     private ListView<Map<String, String>> optionsListView;
     // Map of data to values.  The keys (names of data options) are the
     // labels, and the values (values of each data option) are editable.
+    // This changes when the user hides or adds options.
     private ObservableList<Map<String, String>> data;
+    // A map that hold data-value pairs of all data options of the person.
+    // This will never decrease in size, but may increase if the user adds
+    // data options.
+    private Map<String, String> originalDataMap;
+    // A list of all data options available in the database.
 
     private PatientsController patientCon;
 
@@ -139,6 +147,7 @@ public class EditPersonDialog {
         addRemoveHBox = new HBox();
         Button addButton = new Button("Add");
         Button hideButton = new Button("Hide");
+        Button showButton = new Button("Show");
 
         addButton.setOnAction(e -> {
             TextInputDialog addDialog = new TextInputDialog();
@@ -175,7 +184,40 @@ public class EditPersonDialog {
             // TODO: save to config file.
         });
 
-        addRemoveHBox.getChildren().addAll(addButton, hideButton);
+        showButton.setOnAction(e -> {
+            List<String> optionsList = new ArrayList<>();
+            optionsList.addAll(originalDataMap.keySet());
+            CheckboxDialog dialog = new CheckboxDialog(optionsList,
+                                                       "Data to show");
+            Dialog<List<String>> cbDialog = dialog.getDialog();
+            Optional<List<String>> result = cbDialog.showAndWait();
+            if (result.isPresent()) {
+                // If this ever gets too slow, then some set theory might
+                // be helpful:
+                //
+                //   options to show:
+                //     everything in optionstoshow and not in showing
+                //     => optionstoshow - showing
+                //
+                //   options to not show:
+                //     everything not in optionstoshow and in showing
+                //     => showing - optionstoshow
+                //
+                // But for now, a simple clear and add is good enough.
+                List<String> optionsToShow = result.get();
+                data.clear();
+                for (String option : optionsToShow) {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("option", option);
+                    m.put("value", originalDataMap.get(option));
+                    data.add(m);
+                }
+                initListView();
+                grid.add(optionsListView, 1, 2);
+            }
+        });
+
+        addRemoveHBox.getChildren().addAll(addButton, hideButton, showButton);
     }
 
     /**
@@ -195,6 +237,10 @@ public class EditPersonDialog {
             res = patientCon.getData(date);
         }
         data.addAll(res);
+        originalDataMap = new HashMap<>();
+        for (Map<String, String> map : res) {
+            originalDataMap.put(map.get("option"), map.get("value"));
+        }
     }
 
     /**
