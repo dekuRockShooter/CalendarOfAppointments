@@ -118,6 +118,7 @@ public class EditPersonDialog {
         dialog.setResizable(true);
 
         initAddRemoveHBox();
+        initData();
         initListView();
 
         grid = new GridPane();
@@ -144,8 +145,21 @@ public class EditPersonDialog {
             Optional<String> result = addDialog.showAndWait();
             if (result.isPresent()) {
                 Map<String, String> m = new HashMap<>();
-                m.put(result.get(), "");
+                m.put("option", result.get());
+                m.put("value", null);
                 data.add(m);
+                // Make a new ListView to add the new option.  Theoritcally,
+                // data.add(m) should be enough to append the cell and update
+                // the ListView.  Although this does happen, a copy of
+                // everything in 'data' is shown at the bottom of the list.
+                // Why does appending one element append the entire list?
+                // I don't know.  The fix for this is creating a new ListView
+                // with the new data.  Fortunately, this add operation wont
+                // be used too frequently, so the extra time involved in
+                // doing this isn't much of a concern (JavaFX 8 is concerning,
+                // though).
+                initListView();
+                grid.add(optionsListView, 1, 2);
                 // TODO: save to config file.
             }
         });
@@ -154,6 +168,10 @@ public class EditPersonDialog {
             int selectedIdx = optionsListView.getSelectionModel()
                 .getSelectedIndex();
             data.remove(selectedIdx);
+            // A new ListView is created for pretty much the same reason
+            // why one was created above in addButton's handler.
+            initListView();
+            grid.add(optionsListView, 1, 2);
             // TODO: save to config file.
         });
 
@@ -161,13 +179,10 @@ public class EditPersonDialog {
     }
 
     /**
-     * Create the ListView that shows the editable data.  The ListView
-     * uses an Options cell factory to create a custom view for each
-     * cell that includes a Label and a TextField.
+     * Initialize the data to show in the ListView.
      */
-    private void initListView() throws SQLException {
+    private void initData() throws SQLException {
         data = FXCollections.observableArrayList();
-        optionsListView = new ListView<>();
         List<Map<String, String>> res;
         // No need to test for ssn == null because either one or the
         // other has to be initialized via the constructors.  The
@@ -180,6 +195,16 @@ public class EditPersonDialog {
             res = patientCon.getData(date);
         }
         data.addAll(res);
+    }
+
+    /**
+     * Create the ListView that shows the editable data.  The ListView
+     * uses an Options cell factory to create a custom view for each
+     * cell that includes a Label and a TextField.  The data in 'data'
+     * must have already been initialized.
+     */
+    private void initListView() {
+        optionsListView = new ListView<>();
         optionsListView.setItems(data);
         optionsListView.setCellFactory(
                 (ListView<Map<String, String>> l) -> new Options());
