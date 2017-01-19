@@ -51,6 +51,7 @@ import java.sql.SQLException;
 import com.deku.controller.*;
 import com.deku.dialog.NewAppointmentDialog;
 import com.deku.dialog.NewAppointmentDialog.AppointmentInfo;
+import com.deku.dialog.EditPersonDialog;
 
 
 public class CalendarFactory {
@@ -257,7 +258,20 @@ public class CalendarFactory {
                                     }
                                 }
                                 else {
-                                    System.err.println("edit");
+                                    Dialog<String> dial;
+                                    EditPersonDialog editPerson =
+                                        new EditPersonDialog(getCalendar(cell));
+                                    try {
+                                        dial = editPerson.getDialog();
+                                        dial.showAndWait();
+                                    }
+                                    catch (SQLException err) {
+                                        // Throw RuntimeException because this
+                                        // method does not throw an
+                                        // SQLException.
+                                        throw new RuntimeException(
+                                                    err.toString());
+                                    }
                                 }
                             }
                             else if (event.getButton()

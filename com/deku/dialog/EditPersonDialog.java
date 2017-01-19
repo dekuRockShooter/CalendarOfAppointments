@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Calendar;
 import java.sql.SQLException;
 
 import com.deku.controller.PatientsController;
@@ -62,6 +63,7 @@ import com.deku.controller.PatientsController;
 public class EditPersonDialog {
 
     private String ssn; // SSN of the person whose data is shown.
+    private Calendar date; // Date of the person whose data is shown.
     private Dialog<String> dialog;
     private GridPane grid;
     private HBox addRemoveHBox;
@@ -81,6 +83,22 @@ public class EditPersonDialog {
      */
     public EditPersonDialog(String ssn) {
         this.ssn = ssn;
+        this.date = null;
+    }
+
+    /**
+     * Create a new instance of this class.  The instantiated object can
+     * be used to create a dialog that shows data about the person who
+     * has an appointment on the given day.
+     *
+     * @param datetime the date of an appointment held by the person for
+     *                 who data will shown.  This must have Calendar's
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 MONTH fields.
+     */
+    public EditPersonDialog(Calendar datetime) {
+        this.date = datetime;
+        this.ssn = null;
     }
 
     /**
@@ -150,7 +168,17 @@ public class EditPersonDialog {
     private void initListView() throws SQLException {
         data = FXCollections.observableArrayList();
         optionsListView = new ListView<>();
-        List<Map<String, String>> res = patientCon.getData(ssn);
+        List<Map<String, String>> res;
+        // No need to test for ssn == null because either one or the
+        // other has to be initialized via the constructors.  The
+        // SSN may be incorrect, but at this point, that is the
+        // model's job to handle.
+        if (date == null) {
+            res = patientCon.getData(ssn);
+        }
+        else {
+            res = patientCon.getData(date);
+        }
         data.addAll(res);
         optionsListView.setItems(data);
         optionsListView.setCellFactory(
