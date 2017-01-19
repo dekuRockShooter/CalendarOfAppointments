@@ -81,7 +81,7 @@ public class EditPersonDialog {
     // This will never decrease in size, but may increase if the user adds
     // data options.
     private Map<String, String> originalDataMap;
-    private Set<String> dirtySet;
+    private Map<String, TextField> dirtyMap;
 
     private PatientsController patientCon;
 
@@ -122,7 +122,7 @@ public class EditPersonDialog {
      */
     public Dialog getDialog() throws SQLException {
         patientCon = new PatientsController();
-        dirtySet = new HashSet<>();
+        dirtyMap = new HashMap<>();
 
         dialog = new Dialog<>();
         dialog.setTitle("Edit person");
@@ -145,13 +145,15 @@ public class EditPersonDialog {
         return dialog;
     }
 
+    /**
+     * Commit all changes and remember which options were visible.
+     */
     private void initOkayButtonHandler() {
         final Button okayButton = (Button) dialog.getDialogPane()
             .lookupButton(buttonTypeOk);
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
-            System.err.println(dirtySet);
             for (Map<String, String> optionMap : data) {
-                System.err.println(dirtySet);
+                System.err.println(optionMap);
             }
         });
 
@@ -174,6 +176,7 @@ public class EditPersonDialog {
                 m.put("option", result.get());
                 m.put("value", null);
                 data.add(m);
+                originalDataMap.put(result.get(), null);
                 // Make a new ListView to add the new option.  Theoritcally,
                 // data.add(m) should be enough to append the cell and update
                 // the ListView.  Although this does happen, a copy of
@@ -195,7 +198,7 @@ public class EditPersonDialog {
             int selectedIdx = optionsListView.getSelectionModel()
                 .getSelectedIndex();
             Map<String, String> optionMap = data.remove(selectedIdx);
-            dirtySet.remove(optionMap.get("option"));
+            dirtyMap.remove(optionMap.get("option"));
             // A new ListView is created for pretty much the same reason
             // why one was created above in addButton's handler.
             initListView();
@@ -311,7 +314,7 @@ public class EditPersonDialog {
                 label.setText(item.get("option")); // TODO: no hardcode.
                 textField.setText(item.get("value"));
                 textField.setOnKeyPressed( event -> {
-                    dirtySet.add(item.get("option"));
+                    dirtyMap.put(item.get("option"), textField);
                 });
                 hBox.getChildren().addAll(label, textField);
                 setGraphic(hBox);
