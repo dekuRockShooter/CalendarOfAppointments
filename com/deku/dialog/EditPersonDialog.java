@@ -63,6 +63,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
 
 import com.deku.controller.PatientsController;
@@ -316,10 +317,31 @@ public class EditPersonDialog {
         else {
             res = patientCon.getData(date);
         }
-        data.addAll(res);
         originalDataMap = new HashMap<>();
         for (Map<String, String> map : res) {
             originalDataMap.put(map.get("option"), map.get("value"));
+        }
+        String visibleOption = "";
+        try {
+            BufferedReader reader = Files.newBufferedReader(
+                    visibleOptionsFilePath,
+                    Charset.forName("utf-8"));
+            visibleOption = reader.readLine();
+            while (visibleOption != null) {
+                Map<String, String> map = new HashMap<>();
+                map.put("option", visibleOption);
+                map.put("value", originalDataMap.get(visibleOption));
+                data.add(map);
+                visibleOption = reader.readLine();
+            }
+            reader.close();
+        }
+        catch (IOException err) {
+            //System.err.println("Error while reading file visibleOptions: "
+                    //+ err.toString());
+            //System.err.println("Showing all options instead.");
+            data.clear();
+            data.addAll(res);
         }
     }
 
