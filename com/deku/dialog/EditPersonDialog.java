@@ -49,6 +49,7 @@ import javafx.collections.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.sql.SQLException;
 
@@ -124,8 +125,10 @@ public class EditPersonDialog {
             TextInputDialog addDialog = new TextInputDialog();
             Optional<String> result = addDialog.showAndWait();
             if (result.isPresent()) {
-                String optionName = result.get();
-                //data.add("test");
+                Map<String, String> m = new HashMap<>();
+                m.put(result.get(), "");
+                data.add(m);
+                // TODO: save to config file.
             }
         });
 
@@ -133,6 +136,7 @@ public class EditPersonDialog {
             int selectedIdx = optionsListView.getSelectionModel()
                 .getSelectedIndex();
             data.remove(selectedIdx);
+            // TODO: save to config file.
         });
 
         addRemoveHBox.getChildren().addAll(addButton, hideButton);
