@@ -257,5 +257,28 @@ public class CalendarModel {
         return rsList;
     }
 
+    /**
+     * Get the SSN of a person.  Given a date, this returns the SSN of
+     * the person who has an appointment on that date.  The two arguments
+     * are run through MySQL's STR_TO_DATETIME function in order to get
+     * a valid datetime object.  Callers of this method must be sure
+     * that the arguments they pass are valid arguments for
+     * STR_TO_DATETIME (see its documentation).
+     *
+     * @param datetimeStr the date of the appointment.  This should be
+     *                    convertable to MySQL's datetime datatype.
+     * @param formatStr the format of datetimeStr, using the notation
+     *                  documented in MySQL's STR_TO_DATE function.
+     */
+    public String getSSN(String datetimeSrc, String formatStr)
+            throws SQLException, SQLTimeoutException {
+        Statement stmt = dbCon.createStatement();
+        String cmdTime = String.format(""
+            + "SELECT STR_TO_DATE('%s', '%s')", datetimeSrc, formatStr);
+        String cmd = "SELECT SSN FROM Calendar WHERE Time = (" + cmdTime + ")";
+        ResultSet rs = stmt.executeQuery(cmd);
+        rs.first();
+        return rs.getString("SSN");
+    }
 
 }

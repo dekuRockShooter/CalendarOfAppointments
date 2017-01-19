@@ -88,4 +88,36 @@ public class PatientsController {
         return model.getData(ssn);
     }
 
+     /**
+     * Get all available data about a person.
+     *
+     * @param datetime the date of an appointment held by the person for
+     *                 who data will shown.  This must have Calendar's
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 MONTH fields.
+     * @return a list of maps that represent a different piece of
+     *         data for the person.  The keys for each map are option
+     *         and value.
+     *         The value of the 'option' key is the name of the data option.
+     *         The value of the 'value' key is the value of the data option.
+     *         If the person does not have a piece of data initialized,
+     *         then value of 'value' is "NULL".
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Map<String, String>> getData(Calendar datetime)
+            throws SQLException, SQLTimeoutException {
+        String min = datetime.get(Calendar.MINUTE) < 10 ?
+                     "0" + datetime.get(Calendar.MINUTE) :
+                     "" + datetime.get(Calendar.MINUTE);
+        String datetimeStr = String.format("%s-%s-%s %s:%s",
+                                   datetime.get(Calendar.YEAR),
+                                   datetime.get(Calendar.MONTH) + 1,
+                                   datetime.get(Calendar.DAY_OF_MONTH),
+                                   datetime.get(Calendar.HOUR_OF_DAY),
+                                   min);
+        String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
+        return model.getData(ssn);
+    }
+
 }
