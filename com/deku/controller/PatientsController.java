@@ -107,17 +107,55 @@ public class PatientsController {
      */
     public List<Map<String, String>> getData(Calendar datetime)
             throws SQLException, SQLTimeoutException {
-        String min = datetime.get(Calendar.MINUTE) < 10 ?
-                     "0" + datetime.get(Calendar.MINUTE) :
-                     "" + datetime.get(Calendar.MINUTE);
-        String datetimeStr = String.format("%s-%s-%s %s:%s",
-                                   datetime.get(Calendar.YEAR),
-                                   datetime.get(Calendar.MONTH) + 1,
-                                   datetime.get(Calendar.DAY_OF_MONTH),
-                                   datetime.get(Calendar.HOUR_OF_DAY),
-                                   min);
+        String datetimeStr = calendarToString(datetime);
         String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
         return model.getData(ssn);
+    }
+
+    /**
+     * Set the value of a data option for a person.
+     *
+     * @param ssn the SSN of the person to set the data for
+     * @param option the data option to change
+     * @param newValue the new value to set the data option to
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void setData(String ssn, String option, String newValue)
+            throws SQLException, SQLTimeoutException {
+        model.setData(ssn, option, newValue);
+    }
+
+    /**
+     * Set the value of a data option for a person.
+     *
+     * @param datetime the date of an appointment held by the person for
+     *                 who data will be set.  This must have Calendar's
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 MONTH fields.
+     * @param option the data option to change
+     * @param newValue the new value to set the data option to
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void setData(Calendar datetime, String option, String newValue)
+            throws SQLException, SQLTimeoutException {
+        String datetimeStr = calendarToString(datetime);
+        String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
+        model.setData(ssn, option, newValue);
+    }
+
+    private String calendarToString(Calendar cal) {
+        String min = cal.get(Calendar.MINUTE) < 10 ?
+                     "0" + cal.get(Calendar.MINUTE) :
+                     "" + cal.get(Calendar.MINUTE);
+        String ret = String.format("%s-%s-%s %s:%s",
+                                   cal.get(Calendar.YEAR),
+                                   cal.get(Calendar.MONTH) + 1,
+                                   cal.get(Calendar.DAY_OF_MONTH),
+                                   cal.get(Calendar.HOUR_OF_DAY),
+                                   min);
+        return ret;
     }
 
 }

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Calendar;
@@ -281,4 +282,35 @@ public class CalendarModel {
         return rs.getString("SSN");
     }
 
+    /**
+     * Set the value of a data option for a person.
+     *
+     * @param ssn the SSN of the person to set the data for
+     * @param option the data option to change
+     * @param newValue the new value to set the data option to
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void setData(String ssn, String option, String newValue)
+            throws SQLException, SQLTimeoutException {
+        String cmd = String.format(""
+            + "INSERT INTO PatientData "
+            + "    (SSN, Option, Value) "
+            + "VALUES "
+            + "('%s', '%s', '%s')",
+            ssn, option, newValue);
+        Statement stmt = dbCon.createStatement();
+        try {
+            stmt.executeUpdate(cmd);
+        }
+        // Insert failed because it already exists.  Try to update instead.
+        catch (SQLIntegrityConstraintViolationException err) {
+            cmd = String.format(""
+                + "UPDATE PatientData "
+                + "    SET Value = '%s' "
+                + "WHERE SSN = '%s' AND Option = '%s' ",
+                newValue, ssn, option);
+            stmt.executeUpdate(cmd);
+        }
+    }
 }

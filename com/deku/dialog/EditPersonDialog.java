@@ -152,8 +152,23 @@ public class EditPersonDialog {
         final Button okayButton = (Button) dialog.getDialogPane()
             .lookupButton(buttonTypeOk);
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
-            for (Map<String, String> optionMap : data) {
-                System.err.println(optionMap);
+            for (Map<String, String> options : data) {
+                String curOption = options.get("option");
+                // Save changed data.
+                if (dirtyMap.containsKey(curOption)) {
+                    String newValue = dirtyMap.get(curOption).getText();
+                    try {
+                        if (date == null) {
+                            patientCon.setData(ssn, curOption, newValue);
+                        }
+                        else {
+                            patientCon.setData(date, curOption, newValue);
+                        }
+                    }
+                    catch (SQLException err) {
+                        throw new RuntimeException(err.toString());
+                    }
+                }
             }
         });
 
