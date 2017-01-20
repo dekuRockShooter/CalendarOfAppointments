@@ -92,6 +92,7 @@ public class CalendarFactory {
     private static final int COL_WIDTH_DEFAULT = 150;
     private static final int COL_WIDTH_ZOOM = 400;
     private static final int COL_WIDTH_TIME = 64;
+    private static final String COL_LOCKED_TEXT = "XXXXXX";
 
     /**
      * Factory method for getting a calendar for the current week.
@@ -206,7 +207,7 @@ public class CalendarFactory {
                             if (event.getClickCount() == 1
                                 && event.isControlDown()) {
                                 TableCell c = (TableCell) event.getSource();
-                                if (c.getText().equals("XXXXXX")) {
+                                if (c.getText().equals(COL_LOCKED_TEXT)) {
                                     // No selecting allowed for locked cells.
                                 }
                                 else if (c.getStyle() == "") {
@@ -227,7 +228,7 @@ public class CalendarFactory {
                             // Double click.
                             else if (event.getClickCount() > 1) {
                                 TableCell cell = (TableCell) event.getSource();
-                                if (cell.getText().equals("XXXXXX")) {
+                                if (cell.getText().equals(COL_LOCKED_TEXT)) {
                                     // No editing of locked cells.
                                     return;
                                 }
@@ -649,7 +650,7 @@ public class CalendarFactory {
                                 Integer.parseInt(curTime[1]));
                     try {
                         calendarCon.insert(curDate, "0");
-                        row.setDay(idx, "XXXXXX");
+                        row.setDay(idx, COL_LOCKED_TEXT);
                     }
                     catch (SQLIntegrityConstraintViolationException err) {
                         hasNonEmptyCells = true;
@@ -690,10 +691,10 @@ public class CalendarFactory {
         // Enable paste iff the cell is empty and copyDatetime is not null.
         // Enable copy iff the cell is not empty.
         // Enable delete iff the cell is not empty.
-        // Disable all if cell is XXXXXX.
+        // Disable all if cell is COL_LOCKED_TEXT.
         // Disable lock iff  cell is not empty.
         boolean isEmpty = contextCell.getText().equals("");
-        boolean isLocked = contextCell.getText().equals("XXXXXX");
+        boolean isLocked = contextCell.getText().equals(COL_LOCKED_TEXT);
         delete_item.setDisable(isEmpty || isLocked);
         copy_item.setDisable(isEmpty || isLocked);
         paste_item.setDisable(!isEmpty || (copyDatetime == null) || isLocked);
