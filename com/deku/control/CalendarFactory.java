@@ -580,6 +580,7 @@ public class CalendarFactory {
         static private boolean zoomOut = true; // Show all columns or one.
         private int idx; // Index of the cell in the header row.
         private MenuItem zoom_item;
+        private MenuItem hide_item;
 
         /**
          * Create a context menu for the header row cell at the given index.
@@ -602,6 +603,7 @@ public class CalendarFactory {
         public ContextMenu getInstance(TableView table) {
             ContextMenu columnContextMenu = new ContextMenu();
             zoom_item = new MenuItem("Zoom");
+            hide_item = new MenuItem("Hide");
             zoom_item.setOnAction(new EventHandler<ActionEvent>() {
 
                 public void handle(ActionEvent ev) {
@@ -623,7 +625,13 @@ public class CalendarFactory {
                 }
             });
 
-            columnContextMenu.getItems().addAll(zoom_item);
+            hide_item.setOnAction((ActionEvent ev) -> {
+                ObservableList<TableColumn<TimeSlot, ?>> cols
+                    = table.getColumns();
+                cols.get(idx).setVisible(false);
+            });
+
+            columnContextMenu.getItems().addAll(zoom_item, hide_item);
             return columnContextMenu;
         }
     };
