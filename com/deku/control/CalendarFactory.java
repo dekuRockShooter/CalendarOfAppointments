@@ -649,6 +649,7 @@ public class CalendarFactory {
                                 Integer.parseInt(curTime[1]));
                     try {
                         calendarCon.insert(curDate, "0");
+                        row.setDay(idx, "XXXXXX");
                     }
                     catch (SQLIntegrityConstraintViolationException err) {
                         hasNonEmptyCells = true;
