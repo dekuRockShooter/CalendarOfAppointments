@@ -36,6 +36,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseButton;
+import javafx.scene.control.Alert;
 import javafx.util.Callback;
 
 import java.util.Optional;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Collections;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import com.deku.controller.*;
 import com.deku.dialog.NewAppointmentDialog;
@@ -576,11 +578,12 @@ public class CalendarFactory {
      * zoom option zooms in on the cell over which the context menu was
      * opened.
      */
-    private static class ColumnContextMenu {
-        static private boolean zoomOut = true; // Show all columns or one.
+    private class ColumnContextMenu {
+        private boolean zoomOut = true; // Show all columns or one.
         private int idx; // Index of the cell in the header row.
         private MenuItem zoom_item;
         private MenuItem hide_item;
+        private MenuItem lock_item;
 
         /**
          * Create a context menu for the header row cell at the given index.
@@ -604,6 +607,7 @@ public class CalendarFactory {
             ContextMenu columnContextMenu = new ContextMenu();
             zoom_item = new MenuItem("Zoom");
             hide_item = new MenuItem("Hide");
+            lock_item = new MenuItem("Lock");
             zoom_item.setOnAction(new EventHandler<ActionEvent>() {
 
                 public void handle(ActionEvent ev) {
@@ -631,7 +635,39 @@ public class CalendarFactory {
                 cols.get(idx).setVisible(false);
             });
 
-            columnContextMenu.getItems().addAll(zoom_item, hide_item);
+            lock_item.setOnAction((ActionEvent ev) -> {
+                ObservableList<TableColumn<TimeSlot, ?>> cols
+                    = table.getColumns();
+                String colDate = cols.get(idx).getText();
+                Calendar curDate = getCalendar(colDate);
+                boolean hasNonEmptyCells = false;
+                for (TimeSlot row : data) {
+                    String[] curTime = row.getDay(0).getValue().split(":");
+                    curDate.set(Calendar.HOUR_OF_DAY,
+                                Integer.parseInt(curTime[0]));
+                    curDate.set(Calendar.MINUTE,
+                                Integer.parseInt(curTime[1]));
+                    try {
+                        calendarCon.insert(curDate, "0");
+                    }
+                    catch (SQLIntegrityConstraintViolationException err) {
+                        hasNonEmptyCells = true;
+                    }
+                    catch (SQLException err) {
+                        throw new RuntimeException(err.toString());
+                    }
+                }
+                if (hasNonEmptyCells) {
+                    String msg = "Appointments for some times have already been " +
+                        "made.  These have not been locked.";
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, msg);
+                    alert.showAndWait();
+                }
+            });
+
+            columnContextMenu.getItems().addAll(zoom_item,
+                                                hide_item,
+                                                lock_item);
             return columnContextMenu;
         }
     };
