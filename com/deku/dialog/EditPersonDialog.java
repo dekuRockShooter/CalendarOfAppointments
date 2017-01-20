@@ -364,10 +364,13 @@ public class EditPersonDialog {
      * must have already been initialized.
      */
     private void initListView() {
+        final int listViewWidth = 400;
         optionsListView = new ListView<>();
+        optionsListView.setPrefWidth(listViewWidth);
         optionsListView.setItems(data);
-        optionsListView.setCellFactory(
-                (ListView<Map<String, String>> l) -> new Options());
+        optionsListView.setCellFactory( (ListView<Map<String, String>> l) -> {
+            return new Options(listViewWidth / 2, listViewWidth / 2);
+        });
     }
 
 
@@ -377,12 +380,15 @@ public class EditPersonDialog {
      * listView.setCellFactory(...).  It consists of a Label and a
      * TextField.  The label shows the name of a piece of data, and
      * the textfield shows the current value of the data that can
-     * also be edited.
+     * also be edited.  If the text shown by a label is longer than
+     * the label's width, then the text is wrapped.
      */
     private class Options extends ListCell<Map<String, String>> {
         private TextField textField;
         private Label label;
         private HBox hBox;
+        private int textFieldWidth;
+        private int labelWidth;
 
         /**
          * Default constructor.
@@ -391,6 +397,22 @@ public class EditPersonDialog {
             textField = new TextField();
             label = new Label();
             hBox = new HBox();
+            this.textFieldWidth = 100;
+            this.labelWidth = 100;
+        }
+
+        /**
+         * Constructor for defining the widths of this cell's Nodes.
+         *
+         * @param textFieldWidth the preferred width of the TextField
+         * @param labelWidth the preferred width of the label
+         */
+        public Options(int textFieldWidth, int labelWidth) {
+            textField = new TextField();
+            label = new Label();
+            hBox = new HBox();
+            this.textFieldWidth = textFieldWidth;
+            this.labelWidth = labelWidth;
         }
 
         @Override
@@ -401,7 +423,10 @@ public class EditPersonDialog {
                 // "duplicate children added"
                 hBox.getChildren().clear();
                 label.setText(item.get("option")); // TODO: no hardcode.
+                label.setPrefWidth(labelWidth);
+                label.setWrapText(true);
                 textField.setText(item.get("value"));
+                textField.setPrefWidth(textFieldWidth);
                 textField.setOnKeyPressed( event -> {
                     dirtyMap.put(item.get("option"), textField);
                 });
