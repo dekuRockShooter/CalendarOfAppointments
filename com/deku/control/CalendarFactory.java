@@ -537,6 +537,7 @@ public class CalendarFactory {
             public void handle(ActionEvent e) {
                 try {
                     calendarCon.insert(getCalendar(contextCell), "0");
+                    setName(contextCell, COL_LOCKED_TEXT, "");
                 }
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
