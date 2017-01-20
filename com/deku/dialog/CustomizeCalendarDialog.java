@@ -3,6 +3,7 @@ package com.deku.dialog;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -144,23 +145,141 @@ public class CustomizeCalendarDialog {
     private void initTimesGrid() {
         timesGrid = new GridPane();
         TextField startHour = new TextField(/* TODO: current setting */);
-        TextField endHour = new TextField(/* TODO: current setting */);
+        TextField lastHour = new TextField(/* TODO: current setting */);
         TextField startMin = new TextField(/* TODO: current setting */);
-        TextField endMin = new TextField(/* TODO: current setting */);
+        TextField lastMin = new TextField(/* TODO: current setting */);
         Label startHourLabel = new Label("Start hour");
-        Label endHourLabel = new Label("Last hour");
+        Label lastHourLabel = new Label("Last hour");
         Label startMinLabel = new Label("Start minute");
-        Label endMinLabel = new Label("Last minute");
+        Label lastMinLabel = new Label("Last minute");
 
         timesGrid.add(startHourLabel, 1, 1);
         timesGrid.add(startHour, 2, 1);
-        timesGrid.add(endHourLabel, 3, 1);
-        timesGrid.add(endHour, 4, 1);
+        timesGrid.add(lastHourLabel, 3, 1);
+        timesGrid.add(lastHour, 4, 1);
 
         timesGrid.add(startMinLabel, 1, 2);
         timesGrid.add(startMin, 2, 2);
-        timesGrid.add(endMinLabel, 3, 2);
-        timesGrid.add(endMin, 4, 2);
+        timesGrid.add(lastMinLabel, 3, 2);
+        timesGrid.add(lastMin, 4, 2);
+
+        /**
+         * Class for listening to focus change on a TextField.  When a
+         * TextField loses focus, its input is checked for validity.
+         */
+        class FocusListener implements ChangeListener<Boolean> {
+            private int min; // Least time possible.
+            private int max; // Greatest time possible.
+            // True if the associated TextField gets info for last times.
+            private boolean isLast;
+            // True if the associated TextField gets info for hours.
+            private boolean isHour;
+
+
+            /**
+             * Create a listener that can be used in 
+             * timeTextField.focusProperty.addListener().  This validates
+             * the input to make sure the times are properly ordered (start
+             * times less than end times).  If this is not true, then the
+             * text will be set to the empty string.
+             *
+             * Currently, minutes are only valid if they are multiples of 15.
+             * This may change in the future if the user is allowed to change
+             * the increment between minutes, but for now, if a minute is not
+             * a multiple of 15, then the field is set to the empty string,
+             */
+            public FocusListener(int min, int max,
+                                 boolean isLast, boolean isHour) {
+                this.min = min;
+                this.max = max;
+                this.isLast = isLast;
+                this.isHour = isHour;
+            }
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> arg0,
+                                Boolean oldPropertyValue,
+                                Boolean newPropertyValue) {
+                // Gained focus.
+                if (newPropertyValue) {
+                    return;
+                }
+                // Lost focus, check for valid input.
+                int value = 0;
+                TextField curTextField = null;
+                TextField prevTextField = null;
+                // Try to convert input to int.  Remember the TextFields for
+                // start and last values to be able to ensure that start is
+                // less than last.
+                try {
+                    if (isHour) {
+                        if (isLast) {
+                            curTextField = lastHour;
+                            value = Integer.parseInt(lastHour.getText());
+                            prevTextField = startHour;
+                        }
+                        else {
+                            curTextField = startHour;
+                            value = Integer.parseInt(startHour.getText());
+                            prevTextField = lastHour;
+                        }
+                    }
+                    else {
+                        if (isLast) {
+                            curTextField = lastMin;
+                            value = Integer.parseInt(lastMin.getText());
+                            prevTextField = startMin;
+                        }
+                        else {
+                            curTextField = startMin;
+                            value = Integer.parseInt(startMin.getText());
+                            prevTextField = lastMin;
+                        }
+                        // Minutes can only be in multiples of 15 (for now,
+                        // but this might change in the future).
+                        if ((value % 15) != 0) {
+                            curTextField.setText("");
+                            return;
+                        }
+                    }
+                }
+                // Input was not a number.
+                catch (NumberFormatException err) {
+                    curTextField.setText("");
+                    return;
+                }
+                if ((value < min) || (value > max)) {
+                    curTextField.setText("");
+                }
+                // The complement TextField is empty so the current value is
+                // valid.
+                if (prevTextField.getText().equals("")) {
+                    return;
+                }
+                // Make sure last value is greater than start value.
+                if (isLast) {
+                    if (value <= Integer.parseInt(prevTextField.getText())) {
+                        curTextField.setText("");
+                    }
+                }
+                // Make sure start value is less than last value.
+                else {
+                    if (value >= Integer.parseInt(prevTextField.getText())) {
+                        curTextField.setText("");
+                    }
+                }
+            }
+        }
+
+
+        startHour.focusedProperty().addListener(
+            new FocusListener(0, 23, false, true));
+        lastHour.focusedProperty().addListener(
+            new FocusListener(0, 23, true, true));
+        startMin.focusedProperty().addListener(
+            new FocusListener(0, 45, false, false));
+        lastMin.focusedProperty().addListener(
+            new FocusListener(0, 45, true, false));
         // TODO: read settings file to initialize text.
     }
 
