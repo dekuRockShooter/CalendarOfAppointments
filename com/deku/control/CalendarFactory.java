@@ -135,6 +135,7 @@ public class CalendarFactory {
         initData();
         initColumns();
         table.setItems(data);
+        table.setTableMenuButtonVisible(true);
         // This needs to be after initData, initColumns, and table.setItems!
         initContextMenu();
         table.setContextMenu(contextMenu);
