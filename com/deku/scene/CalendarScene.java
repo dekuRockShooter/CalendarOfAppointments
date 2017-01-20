@@ -45,6 +45,7 @@ import java.time.LocalDate;
 import java.sql.SQLException;
 
 import com.deku.control.CalendarFactory;
+import com.deku.dialog.CustomizeCalendarDialog;
 
 
 public class CalendarScene {
@@ -54,6 +55,7 @@ public class CalendarScene {
     private TableView table;
     private VBox vbox;
     private HBox navBar;
+    private HBox toolBar;
     private DatePicker datePicker;
 
     public Scene getInstance() throws SQLException {
@@ -62,20 +64,36 @@ public class CalendarScene {
         table = calendarFactory.getThisWeek();
         vbox = new VBox();
         navBar = new HBox();
+        toolBar = new HBox();
+        final Button customizeButton = new Button("Customize");
         final Button nextWeekButton = new Button("Next");
         final Button prevWeekButton = new Button("Prev");
         initButton(nextWeekButton, 'n');
         initButton(prevWeekButton, 'p');
+        initCustomizeButton(customizeButton);
         datePicker = new DatePicker();
         initDatePicker();
 
         navBar.getChildren().addAll(prevWeekButton, datePicker,
                                     nextWeekButton);
+        toolBar.getChildren().addAll(customizeButton);
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
-        vbox.getChildren().addAll(navBar, table);
+        vbox.getChildren().addAll(navBar, toolBar, table);
         Scene scene = new Scene(vbox);
         return scene;
+    }
+
+    private void initCustomizeButton(Button button) {
+        button.setOnAction(e -> {
+            CustomizeCalendarDialog ccd = new CustomizeCalendarDialog();
+            try {
+                ccd.getDialog().showAndWait();
+            }
+            catch (SQLException err) {
+                throw new RuntimeException(err.toString());
+            }
+        });
     }
 
     /**
