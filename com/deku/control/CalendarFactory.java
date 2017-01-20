@@ -691,7 +691,7 @@ public class CalendarFactory {
         // Enable delete iff the cell is not empty.
         // Disable all if cell is XXXXXX.
         // Disable lock iff  cell is not empty.
-        boolean isEmpty = contextCell.getText() == "";
+        boolean isEmpty = contextCell.getText().equals("");
         boolean isLocked = contextCell.getText().equals("XXXXXX");
         delete_item.setDisable(isEmpty || isLocked);
         copy_item.setDisable(isEmpty || isLocked);
