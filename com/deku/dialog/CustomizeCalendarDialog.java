@@ -441,6 +441,9 @@ public class CustomizeCalendarDialog {
                 if (dataColorMap.containsKey(item)) {
                     colorPicker.setValue(dataColorMap.get(item));
                 }
+                else {
+                    colorPicker.setValue(Color.WHITE);
+                }
                 colorPicker.setOnAction( event -> {
                     dataColorMap.put(item, colorPicker.getValue());
                 });
