@@ -79,6 +79,8 @@ public class CustomizeCalendarDialog {
     private GridPane timesGrid;
     private HBox colorsHBox;
     private ButtonType buttonTypeOk;
+    private ListView<String> optionsListView;
+    private ObservableList<String> data;
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
 
@@ -291,13 +293,24 @@ public class CustomizeCalendarDialog {
         ObservableList<String> options = FXCollections.observableArrayList();
         options.addAll(dataOptCon.getAllOptions());
         colorsHBox = new HBox();
+        optionsListView = new ListView<>();
         ComboBox<String> comboBox = new ComboBox<>(options);
         // TODO: read settings file to initialize text.
+
         comboBox.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> {
                //
             });
-        colorsHBox.getChildren().addAll(comboBox);
+
+        data = FXCollections.observableArrayList();
+        data.add("lol");
+        data.add("lol2");
+        data.add("lol3");
+        optionsListView.setItems(data);
+        optionsListView.setCellFactory( (ListView<String> l) -> {
+            return new Options();
+        });
+        colorsHBox.getChildren().addAll(comboBox, optionsListView);
     }
 
     /**
@@ -306,5 +319,71 @@ public class CustomizeCalendarDialog {
     private void initMainVBox() {
         mainVBox = new VBox();
         mainVBox.getChildren().addAll(daysHBox, timesGrid, colorsHBox);
+    }
+
+
+    /**
+     * A class that defines a layout for each cell in the ListView.  This
+     * is a cell factory for the ListView that should be set using
+     * listView.setCellFactory(...).  It consists of a Label and a
+     * TextField.  The label shows the name of a piece of data, and
+     * the textfield shows the current value of the data that can
+     * also be edited.  If the text shown by a label is longer than
+     * the label's width, then the text is wrapped.
+     */
+    private class Options extends ListCell<String> {
+        private Button colorButton;
+        private Label label;
+        private HBox hBox;
+        private int colorButtonWidth;
+        private int labelWidth;
+
+        /**
+         * Default constructor.
+         */
+        public Options() {
+            colorButton = new Button();
+            label = new Label();
+            hBox = new HBox();
+            this.colorButtonWidth = 100;
+            this.labelWidth = 100;
+        }
+
+        /**
+         * Constructor for defining the widths of this cell's Nodes.
+         *
+         * @param textFieldWidth the preferred width of the TextField
+         * @param labelWidth the preferred width of the label
+         */
+        public Options(int colorButtonWidth, int labelWidth) {
+            colorButton = new Button();
+            label = new Label();
+            hBox = new HBox();
+            this.colorButtonWidth = colorButtonWidth;
+            this.labelWidth = labelWidth;
+        }
+
+        @Override
+        public void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null) {
+                // The clear is needed to fix an IllegalArgumentException
+                // "duplicate children added"
+                hBox.getChildren().clear();
+                label.setText(item);
+                label.setPrefWidth(labelWidth);
+                label.setWrapText(true);
+                colorButton.setPrefWidth(colorButtonWidth);
+                colorButton.setStyle("-fx-background-color: #000000;"
+                + "-fx-border-color: #e0e0e0;"
+                + "-fx-border-width: 4px;"
+                + "-fx-border-style: solid;");
+                colorButton.setOnAction( event -> {
+                    System.err.println("choose color");
+                });
+                hBox.getChildren().addAll(label, colorButton);
+                setGraphic(hBox);
+            }
+        }
     }
 }
