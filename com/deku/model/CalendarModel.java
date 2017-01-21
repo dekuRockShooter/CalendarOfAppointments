@@ -337,4 +337,25 @@ public class CalendarModel {
         Statement stmt = dbCon.createStatement();
         stmt.executeUpdate(cmd);
     }
+
+    /**
+     * Get all data options available in the database.
+     *
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<String> getAllOptions()
+            throws SQLException, SQLTimeoutException {
+        String cmd = "SELECT Option FROM PatientDataOptions";
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        List<String> rsList = new ArrayList<>(16);
+        rs.beforeFirst();
+        while (rs.next()) {
+            rsList.add(rs.getString("Option"));
+        }
+        rs.close();
+        return rsList;
+    }
+
 }

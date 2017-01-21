@@ -46,6 +46,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -286,10 +287,17 @@ public class CustomizeCalendarDialog {
     /**
      * Create the container for choosing colors.
      */
-    private void initColorsHBox() {
+    private void initColorsHBox() throws SQLException {
+        ObservableList<String> options = FXCollections.observableArrayList();
+        options.addAll(dataOptCon.getAllOptions());
         colorsHBox = new HBox();
+        ComboBox<String> comboBox = new ComboBox<>(options);
         // TODO: read settings file to initialize text.
-        //colorsHBox.getChildren().addAll(checkboxList);
+        comboBox.getSelectionModel().selectedItemProperty().addListener(
+            (observable, oldValue, newValue) -> {
+               //
+            });
+        colorsHBox.getChildren().addAll(comboBox);
     }
 
     /**

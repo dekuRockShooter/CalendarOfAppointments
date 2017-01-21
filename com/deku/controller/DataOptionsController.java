@@ -51,4 +51,15 @@ public class DataOptionsController {
         return true;
     }
 
+    /**
+     * Get all data options available in the database.
+     *
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<String> getAllOptions()
+            throws SQLException, SQLTimeoutException {
+        return model.getAllOptions();
+    }
+
 }
