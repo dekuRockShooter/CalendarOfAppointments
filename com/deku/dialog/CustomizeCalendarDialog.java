@@ -342,7 +342,6 @@ public class CustomizeCalendarDialog {
         ObservableList<String> options = FXCollections.observableArrayList();
         data = FXCollections.observableArrayList();
         options.addAll(dataOptCon.getAllOptions());
-        dataColorMap = new HashMap<>(); // TODO: initialize based on settings
         colorsHBox = new HBox();
         optionsListView = new ListView<>();
         ComboBox<String> comboBox = new ComboBox<>(options);
@@ -356,6 +355,7 @@ public class CustomizeCalendarDialog {
                 dataColorMap.clear();
                 try {
                     data.addAll(dataOptCon.getAllData(newValue));
+                    dataColorMap = dataOptCon.getColors(newValue);
                 }
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
@@ -431,6 +431,9 @@ public class CustomizeCalendarDialog {
                 label.setPrefWidth(labelWidth);
                 label.setWrapText(true);
                 colorPicker.setPrefWidth(colorButtonWidth);
+                if (dataColorMap.containsKey(item)) {
+                    colorPicker.setValue(dataColorMap.get(item));
+                }
                 colorPicker.setOnAction( event -> {
                     dataColorMap.put(item, colorPicker.getValue());
                 });
