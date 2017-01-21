@@ -89,6 +89,12 @@ public class CustomizeCalendarDialog {
     // A mapping of data values to colors.  This stores the values of the
     // currently selected data option and their associated color.
     private Map<String, Color> dataColorMap;
+    // Key for getting user settings for default days in the JSON object
+    // read during initialization.
+    private static final String SAVE_DAY = "save_day";
+    // Key for getting user settings for default times in the JSON object
+    // read during initialization.
+    private static final String SAVE_TIME = "save_time";
     private static final String ID_TIMESGRID_COMBOBOX = "timesGridComboBox";
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
@@ -116,24 +122,22 @@ public class CustomizeCalendarDialog {
 
         JsonReaderFactory readerFactory = Json.createReaderFactory(null);
         JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+        JsonObject daysObject = null;
         try {
             BufferedReader br = Files.newBufferedReader(
                     calendarSettingsFilePath,
                     Charset.forName("utf-8"));
             JsonReader reader = readerFactory.createReader(br);
-            JsonObject checkListJson = reader.readObject();
-            System.err.println(checkListJson.toString());
-
-            reader = readerFactory.createReader(br);
-            JsonObject timesJson = reader.readObject();
-            System.err.println(timesJson.toString());
-
+            JsonObject mainObject = reader.readObject();
+            daysObject = mainObject.getJsonObject(SAVE_DAY);
+            //JsonObject timesObject = mainObject.getJsonObject(SAVE_TIME);
             reader.close();
         }
         catch (Exception err) {
+            throw new RuntimeException(err.toString());
         }
 
-        initDaysHBox();
+        initDaysHBox(daysObject);
         initTimesGrid();
         initColorsHBox();
         initMainVBox();
@@ -155,7 +159,12 @@ public class CustomizeCalendarDialog {
             .lookupButton(buttonTypeOk);
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
             JsonWriterFactory writerFactory = Json.createWriterFactory(null);
-            JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+            // Builder for saving checked days to an object.
+            JsonObjectBuilder dayBuilder = Json.createObjectBuilder();
+            // Builder for saving times to an object.
+            JsonObjectBuilder timeBuilder = Json.createObjectBuilder();
+            // Builder for aggregating all other builders to save everything.
+            JsonObjectBuilder mainBuilder = Json.createObjectBuilder();
             try {
                 BufferedWriter bw = Files.newBufferedWriter(
                         calendarSettingsFilePath,
@@ -164,12 +173,12 @@ public class CustomizeCalendarDialog {
                 // Save day settings.
                 for (Node node : daysHBox.getChildren()) {
                     CheckBox cb = (CheckBox) node;
-                    objBuilder.add(cb.getText(), cb.isSelected());
+                    dayBuilder.add(cb.getText(), cb.isSelected());
                 }
-                writer.writeObject(objBuilder.build());
+                //writer.writeObject(objBuilder.build());
                 // Save time settings.
-                objBuilder = Json.createObjectBuilder();
-                writer = writerFactory.createWriter(bw);
+                //objBuilder = Json.createObjectBuilder();
+                //writer = writerFactory.createWriter(bw);
                 for (Node node : timesGrid.getChildren()) {
                     TextField tf;
                     try {
@@ -178,9 +187,11 @@ public class CustomizeCalendarDialog {
                     catch (ClassCastException err) {
                         continue;
                     }
-                    objBuilder.add(tf.getId(), tf.getText());
+                    timeBuilder.add(tf.getId(), tf.getText());
                 }
-                writer.writeObject(objBuilder.build());
+                mainBuilder.add(SAVE_DAY, dayBuilder);
+                mainBuilder.add(SAVE_TIME, timeBuilder);
+                writer.writeObject(mainBuilder.build());
                 writer.close();
 
                 ComboBox cb = (ComboBox) colorsHBox
@@ -198,17 +209,25 @@ public class CustomizeCalendarDialog {
     /**
      * Create the container to choose which days to show by default.
      */
-    private void initDaysHBox() {
+    private void initDaysHBox(JsonObject dayCheckJsonObject) {
         daysHBox = new HBox();
         List<CheckBox> checkboxList = new ArrayList<>(7);
-        checkboxList.add(new CheckBox("Sunday"));
-        checkboxList.add(new CheckBox("Monday"));
-        checkboxList.add(new CheckBox("Tuesday"));
-        checkboxList.add(new CheckBox("Wednesday"));
-        checkboxList.add(new CheckBox("Thursday"));
-        checkboxList.add(new CheckBox("Friday"));
-        checkboxList.add(new CheckBox("Saturday"));
-        // TODO: read settings file to preselect/deselect.
+        if (dayCheckJsonObject == null) {
+            JsonObjectBuilder dayBuilder = Json.createObjectBuilder();
+            dayBuilder.add("Sunday", true);
+            dayBuilder.add("Monday", true);
+            dayBuilder.add("Tuesday", true);
+            dayBuilder.add("Wednesday", true);
+            dayBuilder.add("Thursday", true);
+            dayBuilder.add("Friday", true);
+            dayBuilder.add("Saturday", true);
+            dayCheckJsonObject = dayBuilder.build();
+        }
+        for (String day : dayCheckJsonObject.keySet()) {
+            CheckBox cb = new CheckBox(day);
+            cb.setSelected(dayCheckJsonObject.getBoolean(day));
+            checkboxList.add(cb);
+        }
         daysHBox.getChildren().addAll(checkboxList);
     }
 
