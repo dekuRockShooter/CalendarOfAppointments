@@ -383,4 +383,36 @@ public class CalendarModel {
         return rsList;
     }
 
+    /**
+     * Get the colors for all values of a data option.  The colors are set
+     * in red, green, and blue values.  Some values might not have a color
+     * set to them.  These values are not included in the list.
+     *
+     * @param option the option for which all values' colors are returned
+     * @return a list of maps that represent a value and its color.  The
+     *         keys for each map are 'Value', 'ColorRed', 'ColorGreen',
+     *         and 'ColorBlue'.
+     *         The value of the 'Value' key is the value of the data option.
+     *         The values of the 'ColorX' keys are string representations of
+     *         floating point numbers that denote the value of the color X.
+     */
+    public List<Map<String, String>> getColors(String option)
+            throws SQLException, SQLTimeoutException {
+        String[] keys = {"Value", "ColorRed", "ColorGreen", "ColorBlue"};
+        String cmd = String.format(""
+                + "SELECT "
+                + "    %s, "
+                + "    %s, "
+                + "    %s, "
+                + "    %s "
+                + "FROM CalendarColors "
+                + "WHERE Option = '%s'",
+                keys[0], keys[1], keys[2], keys[3], option);
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        List<Map<String, String>> rsList = resultSetToMapList(keys, rs);
+        rs.close();
+        return rsList;
+    }
+
 }
