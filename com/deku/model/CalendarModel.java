@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 
+import javafx.scene.paint.Color;
+
 
 public class CalendarModel {
 
@@ -395,6 +397,8 @@ public class CalendarModel {
      *         The value of the 'Value' key is the value of the data option.
      *         The values of the 'ColorX' keys are string representations of
      *         floating point numbers that denote the value of the color X.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
      */
     public List<Map<String, String>> getColors(String option)
             throws SQLException, SQLTimeoutException {
@@ -414,5 +418,46 @@ public class CalendarModel {
         rs.close();
         return rsList;
     }
+
+    /**
+     * Set new colors to values for a data option.
+     *
+     * @param option the data option that the values belong to
+     * @param valueColorMap a map whose keys should be values for the
+     *                      data option.  In other words, the keys are
+     *                      values that people have set the data option
+     *                      to.  The values are Color objects that
+     *                      specify the color to change the value to.
+     *                      The color of any value that exists in the
+     *                      database but not in this map is unmodified.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void setColors(String option, Map<String, Color> valueColorMap)
+            throws SQLException, SQLTimeoutException {
+        String cmd = "";
+        Statement stmt = dbCon.createStatement();
+        dbCon.setAutoCommit(false);
+        for (String value : valueColorMap.keySet()) {
+            Color color = valueColorMap.get(value);
+            cmd = String.format(""
+                    + "INSERT INTO CalendarColors "
+                    + "    (Option, Value, ColorRed, ColorGreen, ColorBlue) "
+                    + "VALUES "
+                    + "    ('%s', '%s', %f, %f, %f) "
+                    + "ON DUPLICATE KEY UPDATE "
+                    + "    Option = VALUES(Option), "
+                    + "    Value = VALUES(Value), "
+                    + "    ColorRed = VALUES(ColorRed), "
+                    + "    ColorBlue = VALUES(ColorBlue), "
+                    + "    ColorGreen = VALUES(ColorGreen) ",
+                    option, value, color.getRed(), color.getGreen(),
+                    color.getBlue());
+            stmt.executeUpdate(cmd);
+        }
+        dbCon.commit();
+        dbCon.setAutoCommit(true);
+    }
+
 
 }

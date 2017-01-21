@@ -94,12 +94,32 @@ public class DataOptionsController {
         List<Map<String, String>> results = model.getColors(option);
         Map<String, Color> valueColorMap = new HashMap<>();
         for (Map<String, String> rgbMap : results) {
-            Color color = Color.rgb(Integer.parseInt(rgbMap.get("ColorRed")),
-                                    Integer.parseInt(rgbMap.get("ColorGreen")),
-                                    Integer.parseInt(rgbMap.get("ColorBlue")));
+            Color color = new Color(Double.parseDouble(rgbMap.get("ColorRed")),
+                                    Double.parseDouble(rgbMap.get("ColorGreen")),
+                                    Double.parseDouble(rgbMap.get("ColorBlue")),
+                                    1.0);
             valueColorMap.put(rgbMap.get("Value"), color);
         }
         return valueColorMap;
+    }
+
+    /**
+     * Set new colors to values for a data option.
+     *
+     * @param option the data option that the values belong to
+     * @param valueColorMap a map whose keys should be values for the
+     *                      data option.  In other words, the keys are
+     *                      values that people have set the data option
+     *                      to.  The values are Color objects that
+     *                      specify the color to change the value to.
+     *                      The color of any value that exists in the
+     *                      database but not in this map is unmodified.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void setColors(String option, Map<String, Color> valueColorMap)
+            throws SQLException, SQLTimeoutException {
+        model.setColors(option, valueColorMap);
     }
 
 }

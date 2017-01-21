@@ -163,6 +163,12 @@ public class CustomizeCalendarDialog {
                 }
                 writer.writeObject(objBuilder.build());
                 writer.close();
+
+                ComboBox cb = (ComboBox) colorsHBox
+                    .lookup("#" + ID_TIMESGRID_COMBOBOX);
+                String curOption = (String) cb.getSelectionModel()
+                    .getSelectedItem();
+                dataOptCon.setColors(curOption, dataColorMap);
             }
             catch (Exception err) {
                 throw new RuntimeException(err.toString());
