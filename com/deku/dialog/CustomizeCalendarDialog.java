@@ -148,6 +148,20 @@ public class CustomizeCalendarDialog {
                     objBuilder.add(cb.getText(), cb.isSelected());
                 }
                 writer.writeObject(objBuilder.build());
+                // Save time settings.
+                objBuilder = Json.createObjectBuilder();
+                writer = writerFactory.createWriter(bw);
+                for (Node node : timesGrid.getChildren()) {
+                    TextField tf;
+                    try {
+                        tf = (TextField) node;
+                    }
+                    catch (ClassCastException err) {
+                        continue;
+                    }
+                    objBuilder.add(tf.getId(), tf.getText());
+                }
+                writer.writeObject(objBuilder.build());
                 writer.close();
             }
             catch (Exception err) {
