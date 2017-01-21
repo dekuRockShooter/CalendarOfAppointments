@@ -114,6 +114,25 @@ public class CustomizeCalendarDialog {
         dialog.setHeaderText("Edit person");
         dialog.setResizable(true);
 
+        JsonReaderFactory readerFactory = Json.createReaderFactory(null);
+        JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+        try {
+            BufferedReader br = Files.newBufferedReader(
+                    calendarSettingsFilePath,
+                    Charset.forName("utf-8"));
+            JsonReader reader = readerFactory.createReader(br);
+            JsonObject checkListJson = reader.readObject();
+            System.err.println(checkListJson.toString());
+
+            reader = readerFactory.createReader(br);
+            JsonObject timesJson = reader.readObject();
+            System.err.println(timesJson.toString());
+
+            reader.close();
+        }
+        catch (Exception err) {
+        }
+
         initDaysHBox();
         initTimesGrid();
         initColorsHBox();
