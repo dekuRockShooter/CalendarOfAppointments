@@ -49,6 +49,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.Node;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -70,6 +71,8 @@ import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import javax.json.*;
+
 import com.deku.controller.DataOptionsController;
 
 
@@ -86,6 +89,7 @@ public class CustomizeCalendarDialog {
     // A mapping of data values to colors.  This stores the values of the
     // currently selected data option and their associated color.
     private Map<String, Color> dataColorMap;
+    private static final String ID_TIMESGRID_COMBOBOX = "timesGridComboBox";
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
 
@@ -128,6 +132,28 @@ public class CustomizeCalendarDialog {
      * Save settings.
      */
     private void initOkayButtonHandler() {
+        final Button okayButton = (Button) dialog.getDialogPane()
+            .lookupButton(buttonTypeOk);
+        okayButton.addEventFilter(ActionEvent.ACTION, event -> {
+            JsonWriterFactory writerFactory = Json.createWriterFactory(null);
+            JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+            try {
+                BufferedWriter bw = Files.newBufferedWriter(
+                        calendarSettingsFilePath,
+                        Charset.forName("utf-8"));
+                JsonWriter writer = writerFactory.createWriter(bw);
+                // Save day settings.
+                for (Node node : daysHBox.getChildren()) {
+                    CheckBox cb = (CheckBox) node;
+                    objBuilder.add(cb.getText(), cb.isSelected());
+                }
+                writer.writeObject(objBuilder.build());
+                writer.close();
+            }
+            catch (Exception err) {
+                throw new RuntimeException(err.toString());
+            }
+        });
     }
 
     /**
@@ -156,6 +182,10 @@ public class CustomizeCalendarDialog {
         TextField lastHour = new TextField(/* TODO: current setting */);
         TextField startMin = new TextField(/* TODO: current setting */);
         TextField lastMin = new TextField(/* TODO: current setting */);
+        startHour.setId("startHour");
+        lastHour.setId("lastHour");
+        startMin.setId("startMin");
+        lastMin.setId("lastMin");
         Label startHourLabel = new Label("Start hour");
         Label lastHourLabel = new Label("Last hour");
         Label startMinLabel = new Label("Start minute");
@@ -302,6 +332,7 @@ public class CustomizeCalendarDialog {
         colorsHBox = new HBox();
         optionsListView = new ListView<>();
         ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.setId(ID_TIMESGRID_COMBOBOX);
         // TODO: read settings file to initialize text.
 
         // Update the color listview to the values of the selected option.
