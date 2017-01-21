@@ -344,6 +344,7 @@ public class CustomizeCalendarDialog {
         options.addAll(dataOptCon.getAllOptions());
         colorsHBox = new HBox();
         optionsListView = new ListView<>();
+        dataColorMap = new HashMap<>();
         ComboBox<String> comboBox = new ComboBox<>(options);
         comboBox.setId(ID_TIMESGRID_COMBOBOX);
         // TODO: read settings file to initialize text.
