@@ -47,6 +47,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ColorPicker;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -81,6 +82,7 @@ public class CustomizeCalendarDialog {
     private ButtonType buttonTypeOk;
     private ListView<String> optionsListView;
     private ObservableList<String> data;
+    private Map<String, String> dataColorMap;
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
 
@@ -292,6 +294,7 @@ public class CustomizeCalendarDialog {
     private void initColorsHBox() throws SQLException {
         ObservableList<String> options = FXCollections.observableArrayList();
         options.addAll(dataOptCon.getAllOptions());
+        dataColorMap = new HashMap<>(); // TODO: initialize based on settings
         colorsHBox = new HBox();
         optionsListView = new ListView<>();
         ComboBox<String> comboBox = new ComboBox<>(options);
@@ -332,7 +335,7 @@ public class CustomizeCalendarDialog {
      * the label's width, then the text is wrapped.
      */
     private class Options extends ListCell<String> {
-        private Button colorButton;
+        private ColorPicker colorPicker;
         private Label label;
         private HBox hBox;
         private int colorButtonWidth;
@@ -342,7 +345,7 @@ public class CustomizeCalendarDialog {
          * Default constructor.
          */
         public Options() {
-            colorButton = new Button();
+            colorPicker = new ColorPicker();
             label = new Label();
             hBox = new HBox();
             this.colorButtonWidth = 100;
@@ -356,7 +359,7 @@ public class CustomizeCalendarDialog {
          * @param labelWidth the preferred width of the label
          */
         public Options(int colorButtonWidth, int labelWidth) {
-            colorButton = new Button();
+            colorPicker = new ColorPicker();
             label = new Label();
             hBox = new HBox();
             this.colorButtonWidth = colorButtonWidth;
@@ -373,15 +376,11 @@ public class CustomizeCalendarDialog {
                 label.setText(item);
                 label.setPrefWidth(labelWidth);
                 label.setWrapText(true);
-                colorButton.setPrefWidth(colorButtonWidth);
-                colorButton.setStyle("-fx-background-color: #000000;"
-                + "-fx-border-color: #e0e0e0;"
-                + "-fx-border-width: 4px;"
-                + "-fx-border-style: solid;");
-                colorButton.setOnAction( event -> {
-                    System.err.println("choose color");
+                colorPicker.setPrefWidth(colorButtonWidth);
+                colorPicker.setOnAction( event -> {
+                    dataColorMap.put(item, colorPicker.getValue());
                 });
-                hBox.getChildren().addAll(label, colorButton);
+                hBox.getChildren().addAll(label, colorPicker);
                 setGraphic(hBox);
             }
         }
