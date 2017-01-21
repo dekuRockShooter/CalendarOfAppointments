@@ -62,4 +62,18 @@ public class DataOptionsController {
         return model.getAllOptions();
     }
 
+    /**
+     * Get all data for a specific data option.  All people specify a
+     * value for a data option.  For a given data option, this method
+     * gets all the different values that people have assigned to it.
+     *
+     * @param option the option for which all unique data values will
+     *               be returned
+     * @return a list of all unique values of the data option
+     */
+    public List<String> getAllData(String option)
+            throws SQLException, SQLTimeoutException {
+        return model.getAllData(option);
+    }
+
 }

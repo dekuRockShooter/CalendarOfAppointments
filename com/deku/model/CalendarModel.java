@@ -358,4 +358,29 @@ public class CalendarModel {
         return rsList;
     }
 
+    /**
+     * Get all data options available in the database.
+     *
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<String> getAllData(String option)
+            throws SQLException, SQLTimeoutException {
+        String cmd = String.format(""
+                + "SELECT DISTINCT "
+                + "    Value "
+                + "FROM PatientData "
+                + "WHERE Option = '%s'",
+                option);
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        List<String> rsList = new ArrayList<>(64);
+        rs.beforeFirst();
+        while (rs.next()) {
+            rsList.add(rs.getString("Value"));
+        }
+        rs.close();
+        return rsList;
+    }
+
 }

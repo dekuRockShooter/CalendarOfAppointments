@@ -33,6 +33,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.paint.Color;
 import javafx.stage.WindowEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -82,7 +83,9 @@ public class CustomizeCalendarDialog {
     private ButtonType buttonTypeOk;
     private ListView<String> optionsListView;
     private ObservableList<String> data;
-    private Map<String, String> dataColorMap;
+    // A mapping of data values to colors.  This stores the values of the
+    // currently selected data option and their associated color.
+    private Map<String, Color> dataColorMap;
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
 
@@ -293,6 +296,7 @@ public class CustomizeCalendarDialog {
      */
     private void initColorsHBox() throws SQLException {
         ObservableList<String> options = FXCollections.observableArrayList();
+        data = FXCollections.observableArrayList();
         options.addAll(dataOptCon.getAllOptions());
         dataColorMap = new HashMap<>(); // TODO: initialize based on settings
         colorsHBox = new HBox();
@@ -300,15 +304,20 @@ public class CustomizeCalendarDialog {
         ComboBox<String> comboBox = new ComboBox<>(options);
         // TODO: read settings file to initialize text.
 
+        // Update the color listview to the values of the selected option.
         comboBox.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> {
-               //
+                data.clear();
+                dataColorMap.clear();
+                try {
+                    data.addAll(dataOptCon.getAllData(newValue));
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+                // TODO: initialize map to saved settings
             });
 
-        data = FXCollections.observableArrayList();
-        data.add("lol");
-        data.add("lol2");
-        data.add("lol3");
         optionsListView.setItems(data);
         optionsListView.setCellFactory( (ListView<String> l) -> {
             return new Options();
@@ -382,6 +391,11 @@ public class CustomizeCalendarDialog {
                 });
                 hBox.getChildren().addAll(label, colorPicker);
                 setGraphic(hBox);
+            }
+            // Erase all context of the cell.  This is needed to truly remove
+            // a cell when its date is removed from the underlying list.
+            else {
+                setGraphic(null);
             }
         }
     }
