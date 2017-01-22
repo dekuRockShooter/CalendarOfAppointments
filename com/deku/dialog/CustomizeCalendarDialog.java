@@ -219,9 +219,9 @@ public class CustomizeCalendarDialog {
         if (idTimesJsonObject == null) {
             JsonObjectBuilder timeBuilder = Json.createObjectBuilder();
             timeBuilder.add(ID_START_HOUR, "8");
-            timeBuilder.add(ID_LAST_HOUR, "6");
-            timeBuilder.add(ID_LAST_MIN, "0");
-            timeBuilder.add(ID_START_MIN, "30");
+            timeBuilder.add(ID_LAST_HOUR, "18");
+            timeBuilder.add(ID_LAST_MIN, "30");
+            timeBuilder.add(ID_START_MIN, "0");
             idTimesJsonObject = timeBuilder.build();
         }
         TextField startHour = new TextField(
