@@ -398,21 +398,37 @@ public class CalendarFactory {
         List<Map<String, String>> appointments =
             dateCon.getAppointments(curWeek);
         Map<String, String> curAppointment = Collections.<String, String>emptyMap();
-        if (!appointments.isEmpty()) {
-            curAppointment = appointments.get(0);
-        }
         data = FXCollections.observableArrayList();
+        JsonObject timeSettings = settingsCon.get(SAVE_TIME);
         int curDay = 1; // iterate through all the days.
         int lastDay = 8;
-        int curHour = 7; // TODO: make this customizable.
-        int lastHour = 18; // TODO: make this customizable.
-        int curMin = 0; // TODO: make this customizable.
+        int curHour = 7;
+        int lastHour = 18;
+        int curMin = 0;
+        int lastMin = 0;
+        // Load saved time settings.
+        if (timeSettings != null) {
+            curHour = Integer.parseInt(timeSettings.getString("startHour"));
+            lastHour = Integer.parseInt(timeSettings.getString("lastHour"));
+            curMin = Integer.parseInt(timeSettings.getString("startMin"));
+            lastMin = Integer.parseInt(timeSettings.getString("lastMin"));
+        }
         int minStep = 15; // How much to increment the minutes by.
         int hourMin = 0; // hhmm
         int appointmentIdx = 0; // The index in the list of the current map.
         String name = "";
         String minStr = "";
         String hourStr = "";
+        // Skip all the appointments that are earlier than the start time.
+        int startHourMin = curHour*100 + curMin;
+        for (Map<String, String> map : appointments) {
+            int hourmin = Integer.parseInt(map.get("hour_min"));
+            if (hourmin >= startHourMin) {
+                curAppointment = map;
+                break;
+            }
+            ++appointmentIdx;
+        }
         // Iterate through all times (these are the rows).
         while (curHour < lastHour) {
             curDay = 1; // 1 is Sunday in MySQL.
