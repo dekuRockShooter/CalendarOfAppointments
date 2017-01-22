@@ -90,7 +90,7 @@ public class CalendarScene {
             try {
                 ccd.getDialog().showAndWait();
             }
-            catch (SQLException err) {
+            catch (Exception err) {
                 throw new RuntimeException(err.toString());
             }
         });
