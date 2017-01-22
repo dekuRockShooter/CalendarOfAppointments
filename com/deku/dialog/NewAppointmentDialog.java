@@ -50,6 +50,7 @@ import java.util.Map;
 import java.sql.SQLException;
 
 import com.deku.controller.PatientsController;
+import com.deku.dialog.EditPersonDialog;
 
 // Source for creating custom dialogs:
 // https://examples.javacodegeeks.com/desktop-java/javafx/dialog-javafx/javafx-dialog-example/
@@ -65,12 +66,49 @@ public class NewAppointmentDialog {
     private CheckBox fuzzyCheckBox;
     private GridPane grid;
     private ListView<Map<String, String>> searchResultsListView;
+    // True if this dialog is meant for editing someone.
+    // False if this dialog is meant for searching someone.
+    private boolean isEdit;
 
     private PatientsController patientCon;
 
+    /**
+     * Default constructor.  The created instance can be used to create
+     * a dialog for searching for someone.  The dialog returns data about
+     * the matching person.
+     */
     public NewAppointmentDialog() {
+        isEdit = false;
     }
 
+    /**
+     * Create an instance to open a dialog for editing someone.  The
+     * dialog created allows the user to search for people and then
+     * edit data about them.  In this case, the dialog does not return
+     * anything.
+     *
+     * @param isEdit if true, then the dialog created by this instance
+     *               will allow the user to search and edit a person.
+     *               If false, then the dialog is the same as if using
+     *               the default constructor.
+     */
+    public NewAppointmentDialog(boolean isEdit) {
+        this.isEdit = isEdit;
+    }
+
+    /**
+     * Get a dialog for searching people.  The behavior of the returned
+     * dialog depends on the boolean passed in the constructors.  If the
+     * default constructor was used, or if false was given to this(boolean),
+     * then the dialog allows the user to search for people.  When clicking
+     * the Okay button, information about a selected person is returned as
+     * an AppointmentInfo object.
+     *
+     * If true was given to this(boolean), then the dialog allows the user
+     * to search for people, and when clicking the Okay button, a new dialog
+     * is open that allows the user to edit the selected person.  When the
+     * user is finished, nothing is returned.
+     */
     public Dialog getDialog() throws SQLException {
         patientCon = new PatientsController();
 
@@ -111,7 +149,7 @@ public class NewAppointmentDialog {
         dialog.setResultConverter(new Callback<ButtonType, AppointmentInfo>() {
             @Override
             public AppointmentInfo call(ButtonType b) {
-                if (b == buttonTypeOk) {
+                if ((b == buttonTypeOk) && (!isEdit)) {
                     String firstName = "";
                     String lastName = "";
                     String ssn = "";
@@ -135,6 +173,22 @@ public class NewAppointmentDialog {
                                                                lastName,
                                                                ssn);
                     return info;
+                }
+                else if ((b == buttonTypeOk) && (isEdit)) {
+                    Map<String, String> selection = searchResultsListView.
+                        getSelectionModel().getSelectedItem();
+                    if (!searchResultsListView.isVisible()
+                        || (selection == null)) {
+                        return null;
+                    }
+                    String ssn = selection.get("SSN");
+                    EditPersonDialog epd = new EditPersonDialog(ssn);
+                    try {
+                        epd.getDialog().showAndWait();
+                    }
+                    catch (SQLException err) {
+                        throw new RuntimeException(err.toString());
+                    }
                 }
                 return null;
             }

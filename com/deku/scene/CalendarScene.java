@@ -46,6 +46,7 @@ import java.sql.SQLException;
 
 import com.deku.control.CalendarFactory;
 import com.deku.dialog.CustomizeCalendarDialog;
+import com.deku.dialog.NewAppointmentDialog;
 
 
 public class CalendarScene {
@@ -66,19 +67,22 @@ public class CalendarScene {
         navBar = new HBox();
         toolBar = new HBox();
         final Button customizeButton = new Button("Customize");
+        final Button searchButton = new Button("Search");
         final Button nextWeekButton = new Button("Next");
         final Button prevWeekButton = new Button("Prev");
         initButton(nextWeekButton, 'n');
         initButton(prevWeekButton, 'p');
         initCustomizeButton(customizeButton);
+        initSearchButton(searchButton);
         datePicker = new DatePicker();
         initDatePicker();
 
         navBar.getChildren().addAll(prevWeekButton, datePicker,
                                     nextWeekButton);
-        toolBar.getChildren().addAll(customizeButton);
+        toolBar.getChildren().addAll(searchButton, customizeButton);
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
+        toolBar.setSpacing(10);
         navBar.setStyle("-fx-alignment: center;");
         toolBar.setStyle("-fx-alignment: center-left;");
         table.setStyle("-fx-alignment: center;");
@@ -92,6 +96,21 @@ public class CalendarScene {
             CustomizeCalendarDialog ccd = new CustomizeCalendarDialog();
             try {
                 ccd.getDialog().showAndWait();
+            }
+            catch (Exception err) {
+                throw new RuntimeException(err.toString());
+            }
+        });
+    }
+
+    /**
+     * Set the search button to open a dialog on click.
+     */
+    private void initSearchButton(Button button) {
+        button.setOnAction(e -> {
+            NewAppointmentDialog nad = new NewAppointmentDialog(true);
+            try {
+                nad.getDialog().showAndWait();
             }
             catch (Exception err) {
                 throw new RuntimeException(err.toString());
