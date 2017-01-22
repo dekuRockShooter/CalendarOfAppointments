@@ -96,6 +96,8 @@ public class CustomizeCalendarDialog {
     // Key for getting user settings for default times in the JSON object
     // read during initialization.
     private static final String SAVE_TIME = "save_time";
+    // Key for getting user settings for the data option to color.
+    private static final String SAVE_COLOR_OPTION = "save_option";
     private static final String ID_TIMESGRID_COMBOBOX = "timesGridComboBox";
     private static final Path calendarSettingsFilePath
         = Paths.get("./calendarSettings");
@@ -147,6 +149,7 @@ public class CustomizeCalendarDialog {
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
             JsonObjectBuilder dayBuilder = Json.createObjectBuilder();
             JsonObjectBuilder timeBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder colorOptBuilder = Json.createObjectBuilder();
             try {
                 // Save day settings.
                 for (Node node : daysHBox.getChildren()) {
@@ -166,13 +169,15 @@ public class CustomizeCalendarDialog {
                 }
                 settingsCon.set(SAVE_DAY, dayBuilder.build());
                 settingsCon.set(SAVE_TIME, timeBuilder.build());
-                settingsCon.commit();
 
                 ComboBox cb = (ComboBox) colorsHBox
                     .lookup("#" + ID_TIMESGRID_COMBOBOX);
                 String curOption = (String) cb.getSelectionModel()
                     .getSelectedItem();
                 settingsCon.setColors(curOption, dataColorMap);
+                colorOptBuilder.add("option", curOption);
+                settingsCon.set(SAVE_COLOR_OPTION, colorOptBuilder.build());
+                settingsCon.commit();
             }
             catch (Exception err) {
                 throw new RuntimeException(err.toString());
