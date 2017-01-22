@@ -92,11 +92,13 @@ public class NewAppointmentDialog {
         initListView();
 
         grid = new GridPane();
-        grid.add(firstNameTxtField, 1, 1);
-        grid.add(lastNameTxtField, 2, 1);
-        grid.add(fuzzyCheckBox, 3, 1);
-        grid.add(searchButton, 3, 2);
-        grid.add(searchResultsListView, 1, 3);
+        grid.add(firstNameTxtField, 1, 1, 2, 1);
+        grid.add(lastNameTxtField, 1, 2, 2, 1);
+        grid.add(searchButton, 1, 3, 1, 1);
+        grid.add(fuzzyCheckBox, 2, 3, 1, 1);
+        grid.add(searchResultsListView, 1, 4, 2, 1);
+        grid.setMargin(fuzzyCheckBox, new Insets(0, 0, 0, 20));
+
         dialog.getDialogPane().setContent(grid);
 
         ButtonType buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
