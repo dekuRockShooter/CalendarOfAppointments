@@ -459,5 +459,35 @@ public class CalendarModel {
         dbCon.setAutoCommit(true);
     }
 
+     /**
+     * Get a piece of data about a person.
+     *
+     * @param option the name of the data option to get the value of
+     * @param ssn the ssn of the person for who the data is queried
+     * @return the value of the data option for person with the given
+     *         ssn
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public String getData(String option, String ssn)
+            throws SQLException, SQLTimeoutException {
+        String cmd = String.format(""
+            + "SELECT "
+            + "    Value "
+            + "FROM PatientData "
+            + "WHERE Option = '%s' and SSN = '%s'",
+            option, ssn);
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        rs.last();
+        if (rs.getRow() == 0) {
+            return "";
+        }
+        rs.first();
+        String ret = rs.getString("Value");
+        rs.close();
+        return ret;
+    }
+
 
 }

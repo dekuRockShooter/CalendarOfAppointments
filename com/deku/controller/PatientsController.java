@@ -112,6 +112,26 @@ public class PatientsController {
         return model.getData(ssn);
     }
 
+     /**
+     * Get a piece of data about a person.
+     *
+     * @param option the name of the data option to get the value of
+     * @param datetime the date of an appointment held by the person for
+     *                 who data will shown.  This must have Calendar's
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 MONTH fields.
+     * @return the value of the data option for the person who has an
+     *         appointment on the given day.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public String getData(String option, Calendar datetime)
+            throws SQLException, SQLTimeoutException {
+        String datetimeStr = calendarToString(datetime);
+        String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
+        return model.getData(option, ssn);
+    }
+
     /**
      * Set the value of a data option for a person.
      *
