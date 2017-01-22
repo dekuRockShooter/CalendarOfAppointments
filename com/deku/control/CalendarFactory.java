@@ -13,6 +13,7 @@ import javafx.event.*;
 import javafx.event.Event.*;
 import javafx.geometry.Insets;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Dialog;
@@ -63,6 +64,12 @@ public class CalendarFactory {
 
     private static final String SAVE_DAY = "save_day";
     private static final String SAVE_TIME = "save_time";
+    private static final String SAVE_COLOR_OPTION = "save_option";
+    // This seems like a fix to the residual background color issue.
+    // That issue causes a cell at absolute position X,Y to keep the
+    // color of the previous cell that was at that position.  With this,
+    // the issue has not come up (so far).
+    private static final String BG_WHITE = "";
 
     // Table whose rows show data in TimeSlot.
     private TableView<TimeSlot> table;
@@ -191,6 +198,19 @@ public class CalendarFactory {
      * what data in TimeSlot is shown for a specific column.
      */
     private void initColumns() throws SQLException {
+        JsonObject colorOptMap = settingsCon.get(SAVE_COLOR_OPTION);
+        // Load color settings.
+        // The ...Tmp variables are placeholder for the non-Tmp counterparts.
+        // They need to be final in order to be used in the lambda, but
+        // their values cannot be determined until after the if block.
+        String colorOptTmp = ""; // The name of the option to color.
+        Map<String, Color> valueColorMapTmp = Collections.emptyMap();
+        if (colorOptMap != null) {
+            colorOptTmp = colorOptMap.getString("option");
+            valueColorMapTmp = settingsCon.getColors(colorOptTmp);
+        }
+        final Map<String, Color> valueColorMap = valueColorMapTmp;
+        final String colorOpt = colorOptTmp;
         // This factory makes each cell listen to mouse events.
         // Source: http://stackoverflow.com/questions/12499269/javafx-tableview-detect-a-doubleclick-on-a-cell
         Callback<TableColumn<TimeSlot, String>,
@@ -206,6 +226,50 @@ public class CalendarFactory {
                             super.updateItem(item, empty);
                             setText(empty ? null : getString());
                             setGraphic(null);
+                            // Empty cell, Time column, or no data option to
+                            // color means white background.
+                            if ((item == null)
+                                || (item.equals(""))
+                                || (Character.isDigit(item.charAt(0)))
+                                || (colorOpt.equals(""))) {
+                                setStyle(BG_WHITE);
+                                return;
+                            }
+                            String value = "";
+                            try {
+                                value = patientsCon.getData(
+                                        colorOpt, getCalendar(this));
+                            }
+                            catch (SQLException err) {
+                                throw new RuntimeException(err.toString());
+                            }
+                            // This nondeterministically happens when using
+                            // the scroll bar.  Clicking on an empty region,
+                            // which is faster if you're at the top and want
+                            // to go to the bottom, sometimes triggers this.
+                            // It also sometimes does not.  When it does
+                            // happen, it seems to do so only the first time
+                            // scrolling after loading new calendar.
+                            // This does not seem to affect anything, but
+                            // who knows?
+                            catch (NullPointerException err) {
+                                System.err.println(err.toString());
+                                setStyle(BG_WHITE);
+                                return;
+                            }
+                            if (valueColorMap.containsKey(value)) {
+                                Color color = valueColorMap.get(value);
+                                int red = (int) (color.getRed() * 100.0);
+                                int green = (int) (color.getGreen() * 100.0);
+                                int blue = (int) (color.getBlue() * 100.0);
+                                setStyle(String.format(""
+                                    + "-fx-background-color: "
+                                    + "    rgb(%d%%,%d%%,%d%%);",
+                                    red, green, blue));
+                            }
+                            else {
+                                setStyle(BG_WHITE);
+                            }
                         }
 
                         private String getString() {
