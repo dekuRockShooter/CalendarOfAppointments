@@ -420,11 +420,19 @@ public class CustomizeCalendarDialog {
         mainVBox = new VBox();
         Separator sep1 = new Separator();
         Separator sep2 = new Separator();
+        Label daysLabel = new Label("Days to show");
+        Label timesLabel = new Label("Beginning and ending times");
+        Label colorsLabel = new Label("Data option colors");
         mainVBox.setSpacing(20);
+        mainVBox.getChildren().add(daysLabel);
         mainVBox.getChildren().add(daysHBox);
         mainVBox.getChildren().add(sep1);
+
+        mainVBox.getChildren().add(timesLabel);
         mainVBox.getChildren().add(timesGrid);
         mainVBox.getChildren().add(sep2);
+
+        mainVBox.getChildren().add(colorsLabel);
         mainVBox.getChildren().add(colorsHBox);
     }
 
