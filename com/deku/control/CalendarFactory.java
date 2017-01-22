@@ -49,6 +49,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.io.IOException;
+
+import javax.json.JsonObject;
 
 import com.deku.controller.*;
 import com.deku.dialog.NewAppointmentDialog;
@@ -58,11 +61,15 @@ import com.deku.dialog.EditPersonDialog;
 
 public class CalendarFactory {
 
+    private static final String SAVE_DAY = "save_day";
+    private static final String SAVE_TIME = "save_time";
+
     // Table whose rows show data in TimeSlot.
     private TableView<TimeSlot> table;
     private DateController dateCon;
     private CalendarController calendarCon;
     private PatientsController patientsCon;
+    private SettingsController settingsCon;
     private Calendar curWeek;
     private ContextMenu contextMenu;
     // Store table rows.
@@ -131,6 +138,12 @@ public class CalendarFactory {
         dateCon = new DateController();
         calendarCon = new CalendarController();
         patientsCon = new PatientsController();
+        settingsCon = SettingsController.getInstance();
+        try {
+            settingsCon.load();
+        }
+        catch (IOException err) {
+        }
 
         // Cell selection instead of default row selection.
         table.getSelectionModel().setCellSelectionEnabled(true);
@@ -303,8 +316,12 @@ public class CalendarFactory {
                 return cell;
             }
         };
+        JsonObject daySettings = settingsCon.get(SAVE_DAY);
+        String[] daySettingsKeys = {"Sunday", "Monday", "Tuesday", "Wednesday",
+                                    "Thursday", "Friday", "Saturday"};
         String[] headers = initHeaders();
         int j = 0;
+        boolean isVisible = true;
         final int NUM_DAYS = 8;
         // Create tables.
         while (j < NUM_DAYS) {
@@ -323,6 +340,16 @@ public class CalendarFactory {
                         }
                     });
             col.setContextMenu(initColumnContextMenu(day_idx));
+            // Set column visibility.
+            if (j > 0) {
+                if (daySettings == null) {
+                    isVisible = true;
+                }
+                else {
+                    isVisible = daySettings.getBoolean(daySettingsKeys[j - 1]);
+                }
+                col.setVisible(isVisible);
+            }
             table.getColumns().add(col);
             ++j;
         }
@@ -421,7 +448,6 @@ public class CalendarFactory {
                     catch (IndexOutOfBoundsException e) {
                         curAppointment = Collections.<String, String>emptyMap();
                     }
-                    System.out.println(curTimeSlot);
                 }
                 else {
                     curTimeSlot.setDay(curDay, "");
