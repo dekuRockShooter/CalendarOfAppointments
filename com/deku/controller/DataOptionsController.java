@@ -79,47 +79,4 @@ public class DataOptionsController {
         return model.getAllData(option);
     }
 
-    /**
-     * Get the colors for all values of a data option.  This gets the colors
-     * to paint each calendar cell with.
-     *
-     * @param option the option for which all values' colors is returned
-     * @return a map of data values to Colors.  The data values (key)
-     *         are all the unique values that have been assigned to the
-     *         given data option.  The Colors are the color that the user
-     *         assigned to the particular data value.
-     */
-    public Map<String, Color> getColors(String option)
-            throws SQLException, SQLTimeoutException {
-        List<Map<String, String>> results = model.getColors(option);
-        Map<String, Color> valueColorMap = new HashMap<>();
-        for (Map<String, String> rgbMap : results) {
-            Color color = new Color(Double.parseDouble(rgbMap.get("ColorRed")),
-                                    Double.parseDouble(rgbMap.get("ColorGreen")),
-                                    Double.parseDouble(rgbMap.get("ColorBlue")),
-                                    1.0);
-            valueColorMap.put(rgbMap.get("Value"), color);
-        }
-        return valueColorMap;
-    }
-
-    /**
-     * Set new colors to values for a data option.
-     *
-     * @param option the data option that the values belong to
-     * @param valueColorMap a map whose keys should be values for the
-     *                      data option.  In other words, the keys are
-     *                      values that people have set the data option
-     *                      to.  The values are Color objects that
-     *                      specify the color to change the value to.
-     *                      The color of any value that exists in the
-     *                      database but not in this map is unmodified.
-     * @throws SQLException if there is any error with the database
-     * @throws SQLTimeoutException if there is any error with the database
-     */
-    public void setColors(String option, Map<String, Color> valueColorMap)
-            throws SQLException, SQLTimeoutException {
-        model.setColors(option, valueColorMap);
-    }
-
 }

@@ -74,6 +74,7 @@ import java.io.IOException;
 import javax.json.*;
 
 import com.deku.controller.DataOptionsController;
+import com.deku.controller.SettingsController;
 
 
 public class CustomizeCalendarDialog {
@@ -100,6 +101,7 @@ public class CustomizeCalendarDialog {
         = Paths.get("./calendarSettings");
 
     private DataOptionsController dataOptCon;
+    private SettingsController settingsCon;
 
     /**
      * Create a new instance of this class.  The instantiated object can
@@ -112,32 +114,17 @@ public class CustomizeCalendarDialog {
     /**
      * @throws SQLException
      */
-    public Dialog getDialog() throws SQLException {
+    public Dialog getDialog() throws SQLException, IOException {
         dataOptCon = new DataOptionsController();
+        settingsCon = SettingsController.getInstance();
+        settingsCon.load();
 
         dialog = new Dialog<>();
         dialog.setTitle("Edit person");
         dialog.setHeaderText("Edit person");
         dialog.setResizable(true);
 
-        JsonReaderFactory readerFactory = Json.createReaderFactory(null);
-        JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-        JsonObject daysObject = null;
-        try {
-            BufferedReader br = Files.newBufferedReader(
-                    calendarSettingsFilePath,
-                    Charset.forName("utf-8"));
-            JsonReader reader = readerFactory.createReader(br);
-            JsonObject mainObject = reader.readObject();
-            daysObject = mainObject.getJsonObject(SAVE_DAY);
-            //JsonObject timesObject = mainObject.getJsonObject(SAVE_TIME);
-            reader.close();
-        }
-        catch (Exception err) {
-            throw new RuntimeException(err.toString());
-        }
-
-        initDaysHBox(daysObject);
+        initDaysHBox();
         initTimesGrid();
         initColorsHBox();
         initMainVBox();
@@ -158,27 +145,15 @@ public class CustomizeCalendarDialog {
         final Button okayButton = (Button) dialog.getDialogPane()
             .lookupButton(buttonTypeOk);
         okayButton.addEventFilter(ActionEvent.ACTION, event -> {
-            JsonWriterFactory writerFactory = Json.createWriterFactory(null);
-            // Builder for saving checked days to an object.
             JsonObjectBuilder dayBuilder = Json.createObjectBuilder();
-            // Builder for saving times to an object.
             JsonObjectBuilder timeBuilder = Json.createObjectBuilder();
-            // Builder for aggregating all other builders to save everything.
-            JsonObjectBuilder mainBuilder = Json.createObjectBuilder();
             try {
-                BufferedWriter bw = Files.newBufferedWriter(
-                        calendarSettingsFilePath,
-                        Charset.forName("utf-8"));
-                JsonWriter writer = writerFactory.createWriter(bw);
                 // Save day settings.
                 for (Node node : daysHBox.getChildren()) {
                     CheckBox cb = (CheckBox) node;
                     dayBuilder.add(cb.getText(), cb.isSelected());
                 }
-                //writer.writeObject(objBuilder.build());
                 // Save time settings.
-                //objBuilder = Json.createObjectBuilder();
-                //writer = writerFactory.createWriter(bw);
                 for (Node node : timesGrid.getChildren()) {
                     TextField tf;
                     try {
@@ -189,16 +164,15 @@ public class CustomizeCalendarDialog {
                     }
                     timeBuilder.add(tf.getId(), tf.getText());
                 }
-                mainBuilder.add(SAVE_DAY, dayBuilder);
-                mainBuilder.add(SAVE_TIME, timeBuilder);
-                writer.writeObject(mainBuilder.build());
-                writer.close();
+                settingsCon.set(SAVE_DAY, dayBuilder.build());
+                settingsCon.set(SAVE_TIME, timeBuilder.build());
+                settingsCon.commit();
 
                 ComboBox cb = (ComboBox) colorsHBox
                     .lookup("#" + ID_TIMESGRID_COMBOBOX);
                 String curOption = (String) cb.getSelectionModel()
                     .getSelectedItem();
-                dataOptCon.setColors(curOption, dataColorMap);
+                settingsCon.setColors(curOption, dataColorMap);
             }
             catch (Exception err) {
                 throw new RuntimeException(err.toString());
@@ -209,9 +183,10 @@ public class CustomizeCalendarDialog {
     /**
      * Create the container to choose which days to show by default.
      */
-    private void initDaysHBox(JsonObject dayCheckJsonObject) {
+    private void initDaysHBox() {
         daysHBox = new HBox();
         List<CheckBox> checkboxList = new ArrayList<>(7);
+        JsonObject dayCheckJsonObject = settingsCon.get(SAVE_DAY);
         if (dayCheckJsonObject == null) {
             JsonObjectBuilder dayBuilder = Json.createObjectBuilder();
             dayBuilder.add("Sunday", true);
@@ -235,15 +210,32 @@ public class CustomizeCalendarDialog {
      * Create the container to choose the default start and end times.
      */
     private void initTimesGrid() {
+        final String ID_START_HOUR = "startHour";
+        final String ID_LAST_HOUR = "lastHour";
+        final String ID_START_MIN = "startMin";
+        final String ID_LAST_MIN = "lastMin";
         timesGrid = new GridPane();
-        TextField startHour = new TextField(/* TODO: current setting */);
-        TextField lastHour = new TextField(/* TODO: current setting */);
-        TextField startMin = new TextField(/* TODO: current setting */);
-        TextField lastMin = new TextField(/* TODO: current setting */);
-        startHour.setId("startHour");
-        lastHour.setId("lastHour");
-        startMin.setId("startMin");
-        lastMin.setId("lastMin");
+        JsonObject idTimesJsonObject = settingsCon.get(SAVE_TIME);
+        if (idTimesJsonObject == null) {
+            JsonObjectBuilder timeBuilder = Json.createObjectBuilder();
+            timeBuilder.add(ID_START_HOUR, "8");
+            timeBuilder.add(ID_LAST_HOUR, "6");
+            timeBuilder.add(ID_LAST_MIN, "0");
+            timeBuilder.add(ID_START_MIN, "30");
+            idTimesJsonObject = timeBuilder.build();
+        }
+        TextField startHour = new TextField(
+                idTimesJsonObject.getString(ID_START_HOUR));
+        TextField lastHour = new TextField(
+                idTimesJsonObject.getString(ID_LAST_HOUR));
+        TextField startMin = new TextField(
+                idTimesJsonObject.getString(ID_START_MIN));
+        TextField lastMin = new TextField(
+                idTimesJsonObject.getString(ID_LAST_MIN));
+        startHour.setId(ID_START_HOUR);
+        lastHour.setId(ID_LAST_HOUR);
+        startMin.setId(ID_START_MIN);
+        lastMin.setId(ID_LAST_MIN);
         Label startHourLabel = new Label("Start hour");
         Label lastHourLabel = new Label("Last hour");
         Label startMinLabel = new Label("Start minute");
@@ -400,7 +392,7 @@ public class CustomizeCalendarDialog {
                 dataColorMap.clear();
                 try {
                     data.addAll(dataOptCon.getAllData(newValue));
-                    dataColorMap = dataOptCon.getColors(newValue);
+                    dataColorMap = settingsCon.getColors(newValue);
                 }
                 catch (SQLException err) {
                     throw new RuntimeException(err.toString());
