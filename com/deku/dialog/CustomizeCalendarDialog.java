@@ -48,6 +48,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Separator;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.Node;
 import javafx.util.Callback;
@@ -417,7 +418,14 @@ public class CustomizeCalendarDialog {
      */
     private void initMainVBox() {
         mainVBox = new VBox();
-        mainVBox.getChildren().addAll(daysHBox, timesGrid, colorsHBox);
+        Separator sep1 = new Separator();
+        Separator sep2 = new Separator();
+        mainVBox.setSpacing(20);
+        mainVBox.getChildren().add(daysHBox);
+        mainVBox.getChildren().add(sep1);
+        mainVBox.getChildren().add(timesGrid);
+        mainVBox.getChildren().add(sep2);
+        mainVBox.getChildren().add(colorsHBox);
     }
 
 
