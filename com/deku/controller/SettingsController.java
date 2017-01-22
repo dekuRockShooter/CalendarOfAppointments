@@ -139,6 +139,10 @@ public class SettingsController {
         }
         settingsMap = new HashMap<>();
         try {
+            // Do nothing if the file is empty.
+            if (settingsFilePath.toFile().length() == 0) {
+                return;
+            }
             BufferedReader br = Files.newBufferedReader(
                     settingsFilePath,
                     Charset.forName("utf-8"));
@@ -148,6 +152,10 @@ public class SettingsController {
             reader.close();
         }
         catch (NoSuchFileException err) {
+            BufferedWriter bw = Files.newBufferedWriter(
+                    settingsFilePath,
+                    Charset.forName("utf-8"));
+            bw.close();
             return;
         }
         for (String key : mainObject.keySet()) {
