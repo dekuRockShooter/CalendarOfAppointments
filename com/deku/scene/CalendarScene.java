@@ -79,6 +79,9 @@ public class CalendarScene {
         toolBar.getChildren().addAll(customizeButton);
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
+        navBar.setStyle("-fx-alignment: center;");
+        toolBar.setStyle("-fx-alignment: center-left;");
+        table.setStyle("-fx-alignment: center;");
         vbox.getChildren().addAll(navBar, toolBar, table);
         Scene scene = new Scene(vbox);
         return scene;
