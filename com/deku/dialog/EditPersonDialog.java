@@ -45,6 +45,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.Tab;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -83,6 +85,7 @@ public class EditPersonDialog {
     private Calendar date; // Date of the person whose data is shown.
     private Dialog<String> dialog;
     private GridPane grid;
+    private TabPane tabPane;
     private HBox addRemoveHBox;
     private ButtonType buttonTypeOk;
     private ListView<Map<String, String>> optionsListView;
@@ -151,7 +154,15 @@ public class EditPersonDialog {
         grid = new GridPane();
         grid.add(addRemoveHBox, 1, 1);
         grid.add(optionsListView, 1, 2);
-        dialog.getDialogPane().setContent(grid);
+
+        Tab dataTab = new Tab("Data", grid);
+        Tab appointmentsTab = new Tab("Appointments", null);
+        dataTab.setClosable(false);
+        appointmentsTab.setClosable(false);
+        tabPane = new TabPane();
+        tabPane.getTabs().addAll(dataTab, appointmentsTab);
+
+        dialog.getDialogPane().setContent(tabPane);
 
         buttonTypeOk = new ButtonType("Okay", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
