@@ -152,7 +152,7 @@ public class CalendarScene {
         try {
             vbox.getChildren().clear();
             table = calendarFactory.getWeek(curWeek);
-            vbox.getChildren().addAll(navBar, table);
+            vbox.getChildren().addAll(navBar, toolBar, table);
         }
         catch (SQLException err) {
             throw new RuntimeException(err.toString());
