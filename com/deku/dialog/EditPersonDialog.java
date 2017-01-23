@@ -403,7 +403,7 @@ public class EditPersonDialog {
     }
 
     /**
-     * Create the buttons to modify the list of options.
+     * Create the buttons to add and remove appointments.
      */
     private void initPagerButtons() {
         pagerHBox = new HBox();
@@ -427,6 +427,69 @@ public class EditPersonDialog {
         pagerHBox.getChildren().addAll(addButton, removeButton);
     }
 
+
+    private class PagerFactory implements Callback<Integer, Node> {
+
+        private ListView<Calendar> listView;
+        private ObservableList<Calendar> dates;
+        private List<Calendar> calList;
+
+        public PagerFactory(ListView<Calendar> listView,
+                            ObservableList<Calendar> dates,
+                            List<Calendar> calList) {
+            this.listView = listView;
+            this.calList = calList;
+            this.dates = dates;
+        }
+
+        // Called when a new page is opened.  Show appointments.
+        @Override
+        public Node call(Integer pageIndex) {
+            dates.clear();
+            int begIdx = pageIndex * 10;
+            int endIdx = begIdx + 10;
+            if (begIdx >= calList.size()) {
+                begIdx = calList.size();
+            }
+            if (endIdx >= calList.size()) {
+                endIdx = calList.size();
+            }
+            dates.addAll(calList.subList(begIdx, endIdx));
+            listView.setCellFactory( (lv) -> {
+                return new ListCell<Calendar>() {
+                    @Override
+                    public void updateItem(Calendar item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item == null) {
+                            return;
+                        }
+                        String month = "";
+                        String day = "";
+                        String hour = "";
+                        String minute = "";
+                        int m = item.get(Calendar.MONTH) + 1;
+                        int d = item.get(Calendar.DAY_OF_MONTH);
+                        int h = item.get(Calendar.HOUR_OF_DAY);
+                        int min = item.get(Calendar.MINUTE);
+                        month = (m < 10) ? ("0" + m) : ("" + m);
+                        day = (d < 10) ? ("0" + d) : ("" + d);
+                        hour = (h < 10) ? ("0" + h) : ("" + h);
+                        minute = (min < 10) ? ("0" + min) : ("" + min);
+                        setText(String.format("%d-%s-%s %s:%s",
+                                    item.get(Calendar.YEAR),
+                                    month,
+                                    day,
+                                    hour,
+                                    minute));
+                    }
+                };
+            });
+            listView.setItems(dates);
+            return listView;
+        }
+    }
+
+
     private void initPager() throws SQLException {
         pagerListView = new ListView<>();
         dates = FXCollections.observableArrayList();
@@ -438,52 +501,7 @@ public class EditPersonDialog {
             calList = patientCon.getAllAppointments(date);
         }
         pager = new Pagination(1 + calList.size() / 10, 0);
-        pager.setPageFactory(new Callback<Integer, Node>() {
-            // Called when a new page is opened.  Show appointments.
-            public Node call(Integer pageIndex) {
-                dates.clear();
-                int begIdx = pageIndex * 10;
-                int endIdx = begIdx + 10;
-                if (begIdx >= calList.size()) {
-                    begIdx = calList.size();
-                }
-                if (endIdx >= calList.size()) {
-                    endIdx = calList.size();
-                }
-                dates.addAll(calList.subList(begIdx, endIdx));
-                pagerListView.setCellFactory( (listView) -> {
-                    return new ListCell<Calendar>() {
-                        @Override
-                        public void updateItem(Calendar item, boolean empty) {
-                            super.updateItem(item, empty);
-                            if (item == null) {
-                                return;
-                            }
-                            String month = "";
-                            String day = "";
-                            String hour = "";
-                            String minute = "";
-                            int m = item.get(Calendar.MONTH) + 1;
-                            int d = item.get(Calendar.DAY_OF_MONTH);
-                            int h = item.get(Calendar.HOUR_OF_DAY);
-                            int min = item.get(Calendar.MINUTE);
-                            month = (m < 10) ? ("0" + m) : ("" + m);
-                            day = (d < 10) ? ("0" + d) : ("" + d);
-                            hour = (h < 10) ? ("0" + h) : ("" + h);
-                            minute = (min < 10) ? ("0" + min) : ("" + min);
-                            setText(String.format("%d-%s-%s %s:%s",
-                                        item.get(Calendar.YEAR),
-                                        month,
-                                        day,
-                                        hour,
-                                        minute));
-                        }
-                    };
-                });
-                pagerListView.setItems(dates);
-                return pagerListView;
-            }
-        });
+        pager.setPageFactory(new PagerFactory(pagerListView, dates, calList));
     }
 
 
