@@ -489,5 +489,43 @@ public class CalendarModel {
         return ret;
     }
 
+     /**
+     * Get all of a person's appointments.
+     *
+     * @param ssn the SSN of the person
+     * @return a list of maps.  Each map is a row in the result set
+     *         that holds information about the appointment.  The
+     *         maps are ordered from newest appointment first to
+     *         oldest appointment last.
+     *         The keys and values are defined as:
+     *         month: the month of the appointment (1..12)
+     *         day: the day of the month of the appointment (1..31)
+     *         year: the year of the appointment (yyyy)
+     *         hour: the hour of the appointment (24 hour)
+     *         min: the minute of the appointment (0..59)
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Map<String, String>> getAllAppointments(String ssn)
+            throws SQLException, SQLTimeoutException {
+        String[] keys = {"hour", "min", "day", "year", "month"};
+        String cmd = String.format(""
+                + "SELECT "
+                + "    HOUR(Time) AS '%s', "
+                + "    MINUTE(Time) AS '%s', "
+                + "    DAY(Time) AS '%s', "
+                + "    YEAR(Time) AS '%s', "
+                + "    MONTH(Time) AS '%s' "
+                + "FROM Calendar "
+                + "WHERE SSN = '%s' "
+                + "ORDER BY Time DESC",
+                keys[0], keys[1], keys[2], keys[3], keys[4], ssn);
+        Statement stmt = dbCon.createStatement();
+        ResultSet rs = stmt.executeQuery(cmd);
+        List<Map<String, String>> rsList = resultSetToMapList(keys, rs);
+        rs.close();
+        return rsList;
+    }
+
 
 }

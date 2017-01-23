@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collections;
 
@@ -93,7 +94,7 @@ public class PatientsController {
      *
      * @param datetime the date of an appointment held by the person for
      *                 who data will shown.  This must have Calendar's
-     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, YEAR, and,
      *                 MONTH fields.
      * @return a list of maps that represent a different piece of
      *         data for the person.  The keys for each map are option
@@ -163,6 +164,58 @@ public class PatientsController {
         String datetimeStr = calendarToString(datetime);
         String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
         model.setData(ssn, option, newValue);
+    }
+
+     /**
+     * Get all of a person's appointments.
+     *
+     * @param datetime the date of an appointment held by the person for
+     *                 who data will be set.  This must have Calendar's
+     *                 HOUR_OF_DAY, MINUTE, DAY_OF_MONTH, WEEK, and,
+     *                 MONTH fields.
+     * @return a list of of Calendars that hold the date and time of
+     *         past and future appointments for the person.  These
+     *         are ordered from newest to oldest date.  Each calendar
+     *         contains the Calendar class' MONTH, DAY_OF_MONTH, YEAR,
+     *         TIME_OF_DAY, and MINUTE fields.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Calendar> getAllAppointments(Calendar datetime)
+            throws SQLException, SQLTimeoutException {
+        String datetimeStr = calendarToString(datetime);
+        String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
+        return getAllAppointments(ssn);
+    }
+
+     /**
+     * Get all of a person's appointments.
+     *
+     * @param ssn the SSN of the person
+     * @return a list of of Calendars that hold the date and time of
+     *         past and future appointments for the person.  These
+     *         are ordered from newest to oldest date.  Each calendar
+     *         contains the Calendar class' MONTH, DAY_OF_MONTH, YEAR,
+     *         TIME_OF_DAY, and MINUTE fields.
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public List<Calendar> getAllAppointments(String ssn)
+            throws SQLException, SQLTimeoutException {
+        List<Map<String, String>> dateMapList = model.getAllAppointments(ssn);
+        // TODO: get mean number of appointments per person.
+        List<Calendar> calList = new ArrayList<>(32);
+        for (Map<String, String> map : dateMapList) {
+            Calendar cal = Calendar.getInstance();
+            // The map stores months in 1..12 but Calendar does so in 0..11.
+            cal.set(Calendar.MONTH, Integer.parseInt(map.get("month")) - 1);
+            cal.set(Calendar.YEAR, Integer.parseInt(map.get("year")));
+            cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(map.get("day")));
+            cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(map.get("hour")));
+            cal.set(Calendar.MINUTE, Integer.parseInt(map.get("min")));
+            calList.add(cal);
+        }
+        return calList;
     }
 
     private String calendarToString(Calendar cal) {
