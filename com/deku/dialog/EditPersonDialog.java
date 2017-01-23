@@ -72,6 +72,7 @@ import java.io.IOException;
 
 import com.deku.controller.PatientsController;
 import com.deku.controller.DataOptionsController;
+import com.deku.controller.CalendarController;
 
 // Idea for adding a layout to a cell:
 // http://stackoverflow.com/questions/15661500/javafx-listview-item-with-an-image-button
@@ -89,13 +90,17 @@ public class EditPersonDialog {
     private GridPane grid;
     private TabPane tabPane;
     private HBox addRemoveHBox;
+    private HBox pagerHBox;
+    private VBox appointmentVBox;
     private ButtonType buttonTypeOk;
     private Pagination pager;
+    private ListView<Calendar> pagerListView;
     private ListView<Map<String, String>> optionsListView;
     // Map of data to values.  The keys (names of data options) are the
     // labels, and the values (values of each data option) are editable.
     // This changes when the user hides or adds options.
     private ObservableList<Map<String, String>> data;
+    private ObservableList<Calendar> dates;
     // A map that hold data-value pairs of all data options of the person.
     // This will never decrease in size, but may increase if the user adds
     // data options.
@@ -154,13 +159,21 @@ public class EditPersonDialog {
         initData();
         initListView();
         initPager();
+        initPagerButtons();
 
         grid = new GridPane();
         grid.add(addRemoveHBox, 1, 1);
         grid.add(optionsListView, 1, 2);
 
+        appointmentVBox = new VBox();
+        appointmentVBox.getChildren().addAll(pagerHBox, pager);
+        // These are needed to fix the issue of the pager collapsing
+        // on page change.
+        appointmentVBox.setPrefHeight(600);
+        pager.setPrefHeight(400);
+
         Tab dataTab = new Tab("Data", grid);
-        Tab appointmentsTab = new Tab("Appointments", pager);
+        Tab appointmentsTab = new Tab("Appointments", appointmentVBox);
         dataTab.setClosable(false);
         appointmentsTab.setClosable(false);
         tabPane = new TabPane();
@@ -389,10 +402,34 @@ public class EditPersonDialog {
         });
     }
 
+    /**
+     * Create the buttons to modify the list of options.
+     */
+    private void initPagerButtons() {
+        pagerHBox = new HBox();
+        Button addButton = new Button("Add");
+        Button removeButton = new Button("Remove");
+
+        removeButton.setOnAction(e -> {
+            Calendar selectedCal = pagerListView
+                .getSelectionModel()
+                .getSelectedItem();
+            try {
+                CalendarController calCon = new CalendarController();
+                calCon.delete(selectedCal);
+            }
+            catch (SQLException err) {
+                throw new RuntimeException(err.toString());
+            }
+            dates.remove(selectedCal);
+        });
+
+        pagerHBox.getChildren().addAll(addButton, removeButton);
+    }
+
     private void initPager() throws SQLException {
-        final ListView<Calendar> lv = new ListView<>();
-        final ObservableList<Calendar> dates
-            = FXCollections.observableArrayList();
+        pagerListView = new ListView<>();
+        dates = FXCollections.observableArrayList();
         final List<Calendar> calList;
         if (date == null) {
             calList = patientCon.getAllAppointments(ssn);
@@ -414,7 +451,7 @@ public class EditPersonDialog {
                     endIdx = calList.size();
                 }
                 dates.addAll(calList.subList(begIdx, endIdx));
-                lv.setCellFactory( (listView) -> {
+                pagerListView.setCellFactory( (listView) -> {
                     return new ListCell<Calendar>() {
                         @Override
                         public void updateItem(Calendar item, boolean empty) {
@@ -443,8 +480,8 @@ public class EditPersonDialog {
                         }
                     };
                 });
-                lv.setItems(dates);
-                return lv;
+                pagerListView.setItems(dates);
+                return pagerListView;
             }
         });
     }
