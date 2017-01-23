@@ -47,6 +47,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.Pagination;
+import javafx.scene.Node;
 import javafx.util.Callback;
 import javafx.collections.*;
 
@@ -88,6 +90,7 @@ public class EditPersonDialog {
     private TabPane tabPane;
     private HBox addRemoveHBox;
     private ButtonType buttonTypeOk;
+    private Pagination pager;
     private ListView<Map<String, String>> optionsListView;
     // Map of data to values.  The keys (names of data options) are the
     // labels, and the values (values of each data option) are editable.
@@ -150,13 +153,14 @@ public class EditPersonDialog {
         initAddRemoveHBox();
         initData();
         initListView();
+        initPager();
 
         grid = new GridPane();
         grid.add(addRemoveHBox, 1, 1);
         grid.add(optionsListView, 1, 2);
 
         Tab dataTab = new Tab("Data", grid);
-        Tab appointmentsTab = new Tab("Appointments", null);
+        Tab appointmentsTab = new Tab("Appointments", pager);
         dataTab.setClosable(false);
         appointmentsTab.setClosable(false);
         tabPane = new TabPane();
@@ -381,6 +385,67 @@ public class EditPersonDialog {
         optionsListView.setItems(data);
         optionsListView.setCellFactory( (ListView<Map<String, String>> l) -> {
             return new Options(listViewWidth / 2, listViewWidth / 2);
+
+        });
+    }
+
+    private void initPager() throws SQLException {
+        final ListView<Calendar> lv = new ListView<>();
+        final ObservableList<Calendar> dates
+            = FXCollections.observableArrayList();
+        final List<Calendar> calList;
+        if (date == null) {
+            calList = patientCon.getAllAppointments(ssn);
+        }
+        else {
+            calList = patientCon.getAllAppointments(date);
+        }
+        pager = new Pagination(1 + calList.size() / 10, 0);
+        pager.setPageFactory(new Callback<Integer, Node>() {
+            // Called when a new page is opened.  Show appointments.
+            public Node call(Integer pageIndex) {
+                dates.clear();
+                int begIdx = pageIndex * 10;
+                int endIdx = begIdx + 10;
+                if (begIdx >= calList.size()) {
+                    begIdx = calList.size();
+                }
+                if (endIdx >= calList.size()) {
+                    endIdx = calList.size();
+                }
+                dates.addAll(calList.subList(begIdx, endIdx));
+                lv.setCellFactory( (listView) -> {
+                    return new ListCell<Calendar>() {
+                        @Override
+                        public void updateItem(Calendar item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (item == null) {
+                                return;
+                            }
+                            String month = "";
+                            String day = "";
+                            String hour = "";
+                            String minute = "";
+                            int m = item.get(Calendar.MONTH) + 1;
+                            int d = item.get(Calendar.DAY_OF_MONTH);
+                            int h = item.get(Calendar.HOUR_OF_DAY);
+                            int min = item.get(Calendar.MINUTE);
+                            month = (m < 10) ? ("0" + m) : ("" + m);
+                            day = (d < 10) ? ("0" + d) : ("" + d);
+                            hour = (h < 10) ? ("0" + h) : ("" + h);
+                            minute = (min < 10) ? ("0" + min) : ("" + min);
+                            setText(String.format("%d-%s-%s %s:%s",
+                                        item.get(Calendar.YEAR),
+                                        month,
+                                        day,
+                                        hour,
+                                        minute));
+                        }
+                    };
+                });
+                lv.setItems(dates);
+                return lv;
+            }
         });
     }
 
