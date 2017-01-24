@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collections;
 
@@ -67,19 +68,94 @@ public class DateController {
     }
 
     /**
+     * Get all available appointments in a given week.
+     *
+     * @param date the week to get all available appointments.  This should
+     *             have Calendar's MONTH, YEAR, and, DAY_OF_MONTH fields
+     *             set.
+     * @return a list of Calendars that represent one available appointment
+     *         in the given week.  The list is sorted in increasing time
+     *         and date (Sun@7, Mon@7, ..., Sat@7, Sun@7:15, Mon@7:15, ...).
+     *         The calendars have the Calendar's MONTH, YEAR, DAY_OF_MONTH,
+     *         MINUTE, and HOUR_OF_DAY fields.
+     */
+    public List<Calendar> getFreeAppointments(Calendar date)
+            throws SQLException, SQLTimeoutException {
+        List<Map<String, String>> rsList = getAppointments(date);
+        List<Calendar> freeList = new ArrayList<>(rsList.size());
+        int startHour = 7;
+        int lastHour = 19;
+        int startMin = 0;
+        int lastMin = 0;
+        int step = 15;
+        Map<String, String> curAppointment;
+        if (rsList.isEmpty()) {
+            curAppointment = Collections.emptyMap();
+        }
+        else {
+            curAppointment = rsList.get(0);
+        }
+        int curAppointmentDay = Integer.parseInt(curAppointment.get("day"));
+        int curAppointmentHrMin = Integer.parseInt(curAppointment.get("hour_min"));
+        int curAppointmentIdx = 0;
+        int curDay = 1;
+        int lastDay = 8;
+        int hourMin = 0;
+        // This calendar has the date for the beginning of the week (Sunday).
+        Calendar curDayCal = (Calendar) date.clone();
+        curDayCal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        // for time
+        //   for day
+        //     if curDayTime == appDayTime
+        //       appDayTime = nextAppDayTime
+        //     else
+        //       add curDayTime to freeList
+        while (startHour < lastHour) {
+            curDay = 1;
+            lastDay = 8;
+            hourMin = startHour*100 + startMin;
+            // Reset to beginning of week.
+            curDayCal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+            while (curDay < lastDay) {
+                if ((curAppointmentHrMin == hourMin)
+                    && (curDay == curAppointmentDay)) {
+                        ++curAppointmentIdx;
+                        if (curAppointmentIdx == rsList.size()) {
+                            curAppointmentHrMin = -1;
+                            curAppointmentDay = -1;
+                        }
+                        else {
+                            curAppointment = rsList.get(curAppointmentIdx);
+                            curAppointmentDay = Integer.parseInt(
+                                    curAppointment.get("day"));
+                            curAppointmentHrMin = Integer.parseInt(
+                                    curAppointment.get("hour_min"));
+                        }
+                }
+                else {
+                    curDayCal.set(Calendar.MINUTE, startMin);
+                    curDayCal.set(Calendar.HOUR_OF_DAY, startHour);
+                    freeList.add((Calendar) curDayCal.clone());
+                }
+                curDayCal.add(Calendar.DAY_OF_MONTH, 1);
+                ++curDay;
+            }
+            startMin = startMin + 15;
+            if (startMin >= 60) {
+                startMin = 0;
+                ++startHour;
+            }
+        }
+        return freeList;
+    }
+
+    /**
      * Get the dates for a week.
      *
      * @param date a date.  This should include day, month, and year.
-     * @return a map with keys last_day_of_month, first_day_of_week,
-     *         cur_month, and cur_year.
-     *         The value of last_day_of_month is the last day of the
-     *         month that the week starts on (1 to 31).
-     *         The value of first_day_of_week is the day of the month
-     *         that the week starts on (1 to 31).
-     *         The value of cur_month is the month (1 to 12) that the
-     *         week starts on.
-     *         The value of cur_year is the year that the week starts
-     *         on (yyyy).
+     * @return a Calendar whose YEAR, MONTH, and DAY_OF_MONTH are set
+     *         to the beginning of the week that contains the 'date'
+     *         parameter.  The beginning of the week in a Sunday.
      */
     public Calendar getWeek(Calendar date)
             throws SQLException, SQLTimeoutException {
