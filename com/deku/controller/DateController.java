@@ -122,7 +122,7 @@ public class DateController {
             lastDay = 8;
             hourMin = startHour*100 + startMin;
             // Reset to beginning of week.
-            curDayCal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+            curDayCal.add(Calendar.DAY_OF_MONTH, -7);
             while (curDay < lastDay) {
                 if ((curAppointmentHrMin == hourMin)
                     && (curDay == curAppointmentDay)) {
