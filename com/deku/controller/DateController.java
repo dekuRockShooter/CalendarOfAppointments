@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 
 import com.deku.model.CalendarModel;
@@ -90,7 +91,13 @@ public class DateController {
         int step = 15;
         Map<String, String> curAppointment;
         if (rsList.isEmpty()) {
-            curAppointment = Collections.emptyMap();
+            curAppointment = new HashMap<>();
+            curAppointment.put("day", "-1");
+            curAppointment.put("hour_min", "-1");
+            curAppointment.put("month", "-1");
+            curAppointment.put("year", "-1");
+            curAppointment.put("FirstName", "-1");
+            curAppointment.put("LastName", "-1");
         }
         else {
             curAppointment = rsList.get(0);
@@ -167,7 +174,6 @@ public class DateController {
                                                date.get(Calendar.MONTH) + 1,
                                                date.get(Calendar.DAY_OF_MONTH));
         Map<String, String> week = model.getWeek(ymd).get(0);
-        System.out.println(week);
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, Integer.parseInt(week.get("cur_year")));
         cal.set(Calendar.MONTH, Integer.parseInt(week.get("cur_month")) - 1);
