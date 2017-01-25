@@ -61,6 +61,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.function.Function;
 import java.sql.SQLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -73,6 +74,7 @@ import java.io.IOException;
 import com.deku.controller.PatientsController;
 import com.deku.controller.DataOptionsController;
 import com.deku.controller.CalendarController;
+import com.deku.controller.DateController;
 
 // Idea for adding a layout to a cell:
 // http://stackoverflow.com/questions/15661500/javafx-listview-item-with-an-image-button
@@ -410,6 +412,40 @@ public class EditPersonDialog {
         Button addButton = new Button("Add");
         Button removeButton = new Button("Remove");
 
+        // Show free appointments.
+        addButton.setOnAction(e -> {
+            final ObservableList<Node> vboxChildren
+                = appointmentVBox.getChildren();
+            final VBox freeAppLay;
+            try {
+                FreeAppointmentLayout fal = new FreeAppointmentLayout();
+                freeAppLay = fal.getLayout();
+            }
+            catch (SQLException err) {
+                throw new RuntimeException(err.toString());
+            }
+            // Hide all Nodes and show the free appointments pagination.
+            for (Node node : vboxChildren) {
+                node.setVisible(false); // Invisible, but still takes up space.
+                node.setManaged(false); // No longer takes up space.
+            }
+            vboxChildren.add(freeAppLay);
+
+            // Show all Nodes and remove the free appointments pagination.
+            Button backButton = new Button("Back");
+            HBox sortHBox = (HBox) freeAppLay.lookup("#"
+                    + FreeAppointmentLayout.ID_BUTTON_BAR);
+            backButton.setOnAction(event -> {
+                vboxChildren.remove(freeAppLay);
+                for (Node node : vboxChildren) {
+                    node.setVisible(true);
+                    node.setManaged(true);
+                }
+            });
+
+            sortHBox.getChildren().add(backButton);
+        });
+
         removeButton.setOnAction(e -> {
             Calendar selectedCal = pagerListView
                 .getSelectionModel()
@@ -428,33 +464,91 @@ public class EditPersonDialog {
     }
 
 
+    /**
+     * A Pagination factory to show lists of dates.  This factory is
+     * meant to be used in a Pagination object's setPageFactory(...)
+     * method.
+     */
     private class PagerFactory implements Callback<Integer, Node> {
 
         private ListView<Calendar> listView;
         private ObservableList<Calendar> dates;
         private List<Calendar> calList;
+        private Function<Integer, List<Calendar>> listFunction;
 
+        /**
+         * Create a Pagination for showing lists of Calendar objects.
+         * When the n'th page is opened, the elements in indeces
+         * 10(n - 1) through but not including 10(n - 1) + 10 in the
+         * given List of Calendars are shown (ten Calendars per page).
+         *
+         * The given ListView is what is shown on each page of the
+         * Pagination.  The ListView displays the contents in the given
+         * ObservableList.  This list's data changes whenever a page
+         * is changed to show the next ten elements in the given List.
+         *
+         * @param listView the ListView to show in the Pagination
+         * @param dates the ObservableList that holds the data to show
+         *              in the ListView
+         * @param calList a List that stores all Calendars to show (the
+         *                universal set).  The Calendars of this list
+         *                are shown in blocks of ten.
+         */
         public PagerFactory(ListView<Calendar> listView,
                             ObservableList<Calendar> dates,
                             List<Calendar> calList) {
             this.listView = listView;
             this.calList = calList;
             this.dates = dates;
+            this.listFunction = null;
+        }
+
+        /**
+         * Create a Paginator for showing lists of Calendar objects.
+         * This constructor lets the caller define what to show when
+         * the n'th page is opened.
+         *
+         * The given ListView is what is shown on each page of the
+         * Paginator.  The ListView displays the contents in the given
+         * ObservableList.  This list's data changes whenever a page
+         * is changed.  The data to display when navigating to the
+         * n'th page is defined by the given Function object.
+         *
+         * @param listView the ListView to show in the Paginator
+         * @param dates the ObservableList that holds the data to show
+         *              in the ListView
+         * @param listFunction the Function that takes a page index (0 or
+         *                     greater) and returns a list of Calendars
+         *                     to show for that page
+         */
+        public PagerFactory(ListView<Calendar> listView,
+                            ObservableList<Calendar> dates,
+                            Function<Integer, List<Calendar>> listFunction) {
+            this.listView = listView;
+            this.calList = calList;
+            this.dates = dates;
+            this.listFunction = listFunction;
         }
 
         // Called when a new page is opened.  Show appointments.
         @Override
         public Node call(Integer pageIndex) {
             dates.clear();
-            int begIdx = pageIndex * 10;
-            int endIdx = begIdx + 10;
-            if (begIdx >= calList.size()) {
-                begIdx = calList.size();
+            // Caller defined behavior on page change.
+            if (listFunction != null) {
+                dates.addAll(listFunction.apply(pageIndex));
             }
-            if (endIdx >= calList.size()) {
-                endIdx = calList.size();
+            else {
+                int begIdx = pageIndex * 10;
+                int endIdx = begIdx + 10;
+                if (begIdx >= calList.size()) {
+                    begIdx = calList.size();
+                }
+                if (endIdx >= calList.size()) {
+                    endIdx = calList.size();
+                }
+                dates.addAll(calList.subList(begIdx, endIdx));
             }
-            dates.addAll(calList.subList(begIdx, endIdx));
             listView.setCellFactory( (lv) -> {
                 return new ListCell<Calendar>() {
                     @Override
@@ -568,5 +662,175 @@ public class EditPersonDialog {
     }
 
 
+    /**
+     * This class creates a layout to show all available appointments.
+     * The layout consists of a Paginator to display the data, and a
+     * few buttons to sort it and make an appointment.
+     *
+     * Use the getLayout() method to get the layout.
+     *
+     * Some Nodes have an ID that can be used to look them up if desired.
+     */
+    private class FreeAppointmentLayout {
+        /**
+         * The ID of the button bar.
+         */
+        public static final String ID_BUTTON_BAR = "id_button_bar";
+        /**
+         * The ID of the Paginator.
+         */
+        public static final String ID_PAGINATOR = "id_paginator";
+
+        // Show a list of available appointments.
+        private Pagination freeAppointmentPager;
+        // Stores the list of available appointments.
+        private ListView<Calendar> freeAppointmentListView;
+        // Data for freeAppointmentListView.
+        private ObservableList<Calendar> freeDates;
+        // Controller for getting the list of free appointments.
+        private DateController dateCon;
+        // Buttons for sorting the data.
+        private HBox sortHBox;
+
+        /**
+         * Default constructor.
+         *
+         * @throws SQLException
+         */
+        public FreeAppointmentLayout() throws SQLException {
+            dateCon = new DateController();
+            freeAppointmentPager = new Pagination();
+            freeAppointmentListView = new ListView<>();
+            sortHBox = new HBox();
+            freeDates = FXCollections.observableArrayList();
+        }
+
+        /**
+         * Create the Paginator.  Dimensions and data to show on page change.
+         *
+         * @throws SQLException
+         */
+        private void initPaginator() throws SQLException {
+            List<Calendar> calList = dateCon
+                .getFreeAppointments(Calendar.getInstance());
+            freeAppointmentPager.setPageFactory(new PagerFactory(
+                                                  freeAppointmentListView,
+                                                  freeDates,
+                                                  pageIndex -> {
+                try {
+                    // Get available appointments for the pageIndex'th week
+                    // after the current week.
+                    Calendar week = Calendar.getInstance();
+                    week.add(Calendar.DAY_OF_MONTH, 7 * pageIndex);
+                    return dateCon.getFreeAppointments(week);
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+            }));
+
+            freeAppointmentPager.setId(ID_PAGINATOR);
+            freeAppointmentPager.setPrefHeight(300);
+        }
+
+        /**
+         * Create the bar that has buttons to sort the data in the Paginator.
+         */
+        private void initButtonBar() {
+            Label sortLabel = new Label("Sort by: ");
+            Button sortTimeButton = new Button("Time");
+            Button sortDayButton = new Button("Day");
+            Button addAppointmentButton = new Button("Add appointment");
+
+            sortDayButton.setOnAction(ev -> {
+                // Sort the data by increasing date.
+                freeDates.sort((cal1, cal2) -> {
+                    int cal1Month = cal1.get(Calendar.MONTH);
+                    int cal2Month = cal2.get(Calendar.MONTH);
+                    int cal1Day = cal1.get(Calendar.DAY_OF_MONTH);
+                    int cal2Day = cal2.get(Calendar.DAY_OF_MONTH);
+                    if (cal1Month < cal2Month) {
+                        return -1;
+                    }
+                    if (cal1Month > cal2Month) {
+                        return 1;
+                    }
+                    // These are for equal months, but different days.
+                    if (cal1Day < cal2Day) {
+                        return -1;
+                    }
+                    if (cal1Day == cal2Day) {
+                        return 0;
+                    }
+                    return 1;
+                });
+            });
+
+            sortTimeButton.setOnAction(ev -> {
+                // Sort the data by increasing time.
+                freeDates.sort((cal1, cal2) -> {
+                    int cal1Hour = cal1.get(Calendar.HOUR_OF_DAY);
+                    int cal2Hour = cal2.get(Calendar.HOUR_OF_DAY);
+                    int cal1Min = cal1.get(Calendar.MINUTE);
+                    int cal2Min = cal2.get(Calendar.MINUTE);
+                    if (cal1Hour < cal2Hour) {
+                        return -1;
+                    }
+                    if (cal1Hour > cal2Hour) {
+                        return 1;
+                    }
+                    // These are for equal hours, but different minutes.
+                    if (cal1Min < cal2Min) {
+                        return -1;
+                    }
+                    if (cal1Min == cal2Min) {
+                        return 0;
+                    }
+                    return 1;
+                });
+            });
+
+            sortHBox.setId(ID_BUTTON_BAR);
+            sortHBox.getChildren().addAll(sortLabel, sortDayButton,
+                                          sortTimeButton, addAppointmentButton);
+        }
+
+        /**
+         * Get a VBox that shows a Paginator of available appointments.
+         * Each page in the Paginator shows all available appointments
+         * for a specific week.  The first page shows available appointments
+         * for the current week, the second page shows them for the
+         * next week, and so on.  In general, the n'th page shows the
+         * available appointments for the (n-1)'th week after the current
+         * week.
+         *
+         * The VBox also contains buttons to sort the appointments in
+         * increasing time or date, as well as a button to add the
+         * currently selected date as an appointment for the person
+         * whose information is being edited.
+         *
+         * @return a VBox that contains a list of available appointments
+         */
+        public VBox getLayout() throws SQLException {
+            initPaginator();
+            initButtonBar();
+            VBox addVBox = new VBox();
+
+            addVBox.getChildren().addAll(sortHBox, freeAppointmentPager);
+            return addVBox;
+            //try {
+                //CalendarController calCon = new CalendarController();
+                //if (date == null) {
+                    //calCon.insert(selectedCal, ssn);
+                //}
+                //else {
+                    //calCon.insert(selectedCal, date);
+                //}
+            //}
+            //catch (SQLException err) {
+                //throw new RuntimeException(err.toString());
+            //}
+        }
+    }
 
 }
