@@ -790,6 +790,25 @@ public class EditPersonDialog {
                 });
             });
 
+            addAppointmentButton.setOnAction(ev -> {
+                Calendar selectedCal = freeAppointmentListView
+                    .getSelectionModel()
+                    .getSelectedItem();
+                try {
+                    CalendarController calCon = new CalendarController();
+                    if (date == null) {
+                        calCon.insert(selectedCal, ssn);
+                    }
+                    else {
+                        calCon.insert(selectedCal, date);
+                    }
+                }
+                catch (SQLException err) {
+                    throw new RuntimeException(err.toString());
+                }
+                freeDates.remove(selectedCal);
+            });
+
             sortHBox.setId(ID_BUTTON_BAR);
             sortHBox.getChildren().addAll(sortLabel, sortDayButton,
                                           sortTimeButton, addAppointmentButton);
@@ -818,18 +837,6 @@ public class EditPersonDialog {
 
             addVBox.getChildren().addAll(sortHBox, freeAppointmentPager);
             return addVBox;
-            //try {
-                //CalendarController calCon = new CalendarController();
-                //if (date == null) {
-                    //calCon.insert(selectedCal, ssn);
-                //}
-                //else {
-                    //calCon.insert(selectedCal, date);
-                //}
-            //}
-            //catch (SQLException err) {
-                //throw new RuntimeException(err.toString());
-            //}
         }
     }
 

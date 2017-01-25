@@ -43,14 +43,14 @@ public class CalendarController {
      * @throws SQLException if there is any error with the database
      * @throws SQLTimeoutException if there is any error with the database
      */
-    public void insert(Calendar datetime, String ssn) 
+    public void insert(Calendar datetime, String ssn)
             throws SQLException, SQLTimeoutException {
         // Get first name, last name, hour, minuute, day of week, month,
         // and year of all patients of the given week.
         String datetimeStr = calendarToString(datetime);
         model.insert(datetimeStr, "%Y-%m-%e %k:%i", ssn);
     }
-    
+
      /**
      * Insert a new appointment.
      *
@@ -63,11 +63,30 @@ public class CalendarController {
      * @throws SQLException if there is any error with the database
      * @throws SQLTimeoutException if there is any error with the database
      */
-    public void insert(String datetime, String formatStr, String ssn) 
+    public void insert(String datetime, String formatStr, String ssn)
             throws SQLException, SQLTimeoutException {
         // Get first name, last name, hour, minuute, day of week, month,
         // and year of all patients of the given week.
         model.insert(datetime, formatStr, ssn);
+    }
+
+     /**
+     * Insert a new appointment.  This uses a given date to identify the
+     * person who has an appointment on it.  After identification, the
+     * new appointment is made.
+     *
+     * @param datetime the date to insert.  This should include day, month,
+     *             year, hour, and minute
+     * @param date the appointment held by the person
+     * @throws SQLException if there is any error with the database
+     * @throws SQLTimeoutException if there is any error with the database
+     */
+    public void insert(Calendar datetime, Calendar date)
+            throws SQLException, SQLTimeoutException {
+        String datetimeStr = calendarToString(date);
+        String ssn = model.getSSN(datetimeStr, "%Y-%m-%e %k:%i");
+        datetimeStr = calendarToString(datetime);
+        model.insert(datetimeStr, "%Y-%m-%e %k:%i", ssn);
     }
 
     /**
