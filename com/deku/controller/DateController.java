@@ -84,8 +84,8 @@ public class DateController {
             throws SQLException, SQLTimeoutException {
         List<Map<String, String>> rsList = getAppointments(date);
         List<Calendar> freeList = new ArrayList<>(rsList.size());
-        int startHour = 7;
-        int lastHour = 19;
+        int startHour = 6;
+        int lastHour = 15;
         int startMin = 0;
         int lastMin = 0;
         int step = 15;
@@ -122,7 +122,6 @@ public class DateController {
             lastDay = 8;
             hourMin = startHour*100 + startMin;
             // Reset to beginning of week.
-            curDayCal.add(Calendar.DAY_OF_MONTH, -7);
             while (curDay < lastDay) {
                 if ((curAppointmentHrMin == hourMin)
                     && (curDay == curAppointmentDay)) {
@@ -147,6 +146,7 @@ public class DateController {
                 curDayCal.add(Calendar.DAY_OF_MONTH, 1);
                 ++curDay;
             }
+            curDayCal.add(Calendar.DAY_OF_MONTH, -7);
             startMin = startMin + 15;
             if (startMin >= 60) {
                 startMin = 0;
