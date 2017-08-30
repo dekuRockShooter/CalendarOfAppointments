@@ -1,0 +1,38 @@
+This is a program to store appointments for a clinic.  It started out as a proposal by an actual clinic, but the project never took off.  I still wanted to develop it and decided to see how far I could take the project while collaborating with the clinic
+during the month-long winter break.  This was first implemented as a web app, but I switched to JavaFX because it provided more tools for facilitating the development of the client's needs, and because it was an emerging framework I had never used before that could be helpful in the future.
+
+Some notable things I wished to do differently include:
+    * Encrypting the database.
+    * Reading and setting database configurations from a file.
+    * Talk more with the user about the database and legal issues.  I doubt the
+      database could be deployed as is, even if encrypted.
+    * Install the program on the end-user's hardware.
+
+This was the first project I worked on using Agile/Scrum methodologies and in which I
+met with the end-user weekly.  I learned how useful Agile is when the client kept
+asking for new features or drastic modifications.  It was a fun experience in which I
+learned that nothing is ever set in stone, and to expect requirements to change at any
+time.  I also learned how important communication with the client is.
+
+The program in its current form supports:
+    * Insertion, deletion, and modification of appointments for the clinic's patients.
+    * Changing appointment dates and times by click-and-dragging.
+    * Selecting multiple appointments to do batch removals.
+    * Navigate to any week of any month and year.
+    * Disable any kind of modification on user-defined days and times to prevent
+      assigning appointments (holidays, non-workdays, meeting hours, etc.).
+    * Customize the appearence of the calendar: show only a subset of days or times,
+      and give appointments colors to help differentiate among appointment types.
+    * Search for patients using either exact or fuzzy search.
+    * Retrieve a list of all appointments--past and future--of any patient.
+    * Retrieve any subset of data about any patient.
+    * Adding any number of data fields to the data associated with a patient (if some
+      doctors thought adding a field for birthplace was important, they could do so).
+
+To use this program, initialize a MySQL database with the schema defined in calendar.sql.  Next, start the MySQL server; the default connection details are stored and can be changed in the private constructor of the CalendarModel class.
+
+Once the database is online, start the program by running this command in the terminal:
+    $ java -cp .:bin/:lib/mysql-connector-java-5.1.40-bin.jar:lib/javax.json-api-1.0.jar:lib/javax.json-1.0.4.jar CalendarLauncher
+
+To compile the program run this in the terminal:
+    $ javac -cp .:lib/javax.json-api-1.0.jar -d bin/ <srcfile>.java
