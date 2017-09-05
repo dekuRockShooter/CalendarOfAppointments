@@ -4,7 +4,7 @@ This is a program to store appointments.  You can add, remove, change, and searc
 
 Note: This is a prototype.  It was tested and cofirmed to run on Linux 4.10.
 
-![Main screen](/images/demo/calendar_1.png)
+![Main screen](images/demo/calendar_1.png)
 
 The program in its current form supports:
 * Insertion, deletion, and modification of appointments.
@@ -40,35 +40,35 @@ To compile the program run this in the terminal:
 
 Left click on a cell to show the options available for it.  If the cell is empty, it can be locked.  Locked cells display 'XXXXXX' and cannot be modified.  If it's not empty, you can copy it and then paste it to an empty cell, and you can also delete it.
 
-![Context menu](/images/demo/calendar_3.png)
+![Context menu](images/demo/calendar_3.png)
 
 ## Customization
 
 You can customize the contents of the calendar by pressing the 'Customize' button at the top.  This dialog allows you to show and hide days, show a range of times, and to change the colors of cells depending on their data value.  In this dialog, appointments made with people whose first name is Rebecca are displayed with a green background, and those with a first name of loldfsdf have a pink background.  You can use the dropdown menu to the left to choose other data for changing colors, for example, set the background to red if the preferred name is Becky.  However, there is no data field to define the preferred name; but you can easily create one (the next section's topic).
 
-![Customize](/images/demo/calendar_5.png)
+![Customize](images/demo/calendar_5.png)
 
 ## Editing data
 
 Double-click on an appointment, and you'll see the following dialog.  Here, you can edit the appointment's data.  If you want to add more data, for example, a field for the preferred name, then click on the add button, enter the new field, and it'll then show up as an editable piece of data (for all appointments, not just this one).  Now you can change the background of appointments with a preferred name of Becky to red, if you want.
 
-![Customize](/images/demo/calendar_7.png) ![Customize](/images/demo/calendar_8.png) ![Customize](/images/demo/calendar_9.png)
+![Customize](images/demo/calendar_7.png) ![Customize](images/demo/calendar_8.png) ![Customize](images/demo/calendar_9.png)
 
 If you click on the Hide button, then the selcted data will be hidden.  This is useful for hiding data that you don't care about.  If you find that you never use the 'Preferred name' field, then you can hide it, forget about it, and never be bothered by it again.  You can also do this by clicking on the Show button, which allows you to hide data, and show data that you might have hidden earilier.
 
-![Customize](/images/demo/calendar_10.png)
+![Customize](images/demo/calendar_10.png)
 
 ## Editing appointments
 
 To see all the appointments that you booked with this person, click on the Appointments tab.  This will show you all the appointments you made in the past and future.  You can remove or add appointments here.  If you want to add an appointment, then you'll be presented with a list of free dates and times.  Choose one, click on 'Add appointment', and you're done.  The appointment wont show up immediately in the list of appointments, but don't worry, it's been made.  You can close and reopen the dialog to see the change.
 
-![Customize](/images/demo/calendar_11.png) ![Customize](/images/demo/calendar_12.png)
+![Customize](images/demo/calendar_11.png) ![Customize](images/demo/calendar_12.png)
 
 ## Searching for appointments
 
 On the main screen screen, click on 'Search', and you'll see the following dialog.  This allows you to search for any person who you've made an appointment with.  If you tick the 'Fuzzy search' checkbox, then you'll enable fuzzy search, for those times when you only fuzzily recall the person's name.
 
-![Customize](/images/demo/calendar_6.png)
+![Customize](images/demo/calendar_6.png)
 
 # Background
 
